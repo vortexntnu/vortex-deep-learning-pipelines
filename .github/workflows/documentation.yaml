@@ -1,0 +1,39 @@
+name: Build Documentation
+
+on:
+  push:
+    branches:
+      - main # Build on pushes to the main branch
+  pull_request:
+    branches:
+      - main # Also build on pull requests to the main branch
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install sphinx
+          pip install sphinx-autodoc sphinx-rtd-theme sphinxcontrib-apidoc
+
+      - name: Build Sphinx documentation
+        working-directory: ./docs # Specify the directory where your Sphinx config is
+        run: |
+          make html  # This builds your documentation in HTML format
+
+      - name: Upload documentation artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: sphinx-docs
+          path: ./docs/_build/html/
