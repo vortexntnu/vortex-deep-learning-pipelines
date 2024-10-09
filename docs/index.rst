@@ -19,6 +19,8 @@ documentation for details.
     usage
     examples
     api
+.. literalinclude:: file_structure.txt
+    :language: text
 
 Indices and tables
 ==================
