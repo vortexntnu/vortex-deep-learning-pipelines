@@ -9,7 +9,7 @@ vortex image build documentation
 .. toctree::
    :maxdepth: 2
 
-   ../YOLO-detect-buoys
+   ../YOLO-detect-buoys/*
 
 Indices and tables
 ==================
