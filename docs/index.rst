@@ -19,8 +19,15 @@ documentation for details.
     usage
     examples
     api
-.. literalinclude:: file_structure.txt
-    :language: text
+
+.. toctree::
+   :caption: Project Structure
+   :maxdepth: 2
+
+   YOLO-detect-buoys
+   docs/conf
+   requirements
+   LICENSE
 
 Indices and tables
 ==================

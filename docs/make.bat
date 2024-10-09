@@ -2,8 +2,6 @@
 
 pushd %~dp0
 
-tree >> file_structure.txt
-
 REM Command file for Sphinx documentation
 
 if "%SPHINXBUILD%" == "" (
