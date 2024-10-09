@@ -6,28 +6,10 @@
 vortex image build documentation
 ================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
-
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-    installation
-    usage
-    examples
-    api
-
-.. toctree::
-   :caption: Project Structure
-   :maxdepth: 2
-
-   YOLO-detect-buoys
-   docs/conf
-   requirements
-   LICENSE
+   ../YOLO-detect-buoys
 
 Indices and tables
 ==================
