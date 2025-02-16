@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --partition=GPUQ
-#SBATCH --account=ie-idi
-#SBATCH --time=999:99:99
+#SBATCH --account=studiegrupper-vortex
+#SBATCH --time=2:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH --gres=gpu:a100:4
