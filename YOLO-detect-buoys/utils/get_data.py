@@ -1,7 +1,6 @@
-"""
-Get data from Roboflow.
 # Path: YOLO-detect-buoys/utils/get_device.py
-"""
+
+"""Get data from Roboflow."""
 
 from os import getenv
 
@@ -11,8 +10,8 @@ from roboflow.core.dataset import Dataset
 
 
 def get_data_roboflow() -> Dataset:
-    """
-    Get data from Roboflow.
+    """Get data from Roboflow.
+
     Do not expose the API key in the code.
     """
     # import environment variables
@@ -32,10 +31,8 @@ def get_data_roboflow() -> Dataset:
 
 
 def get_data(*args, **kwargs):
-    """
-    Get data from Roboflow.
+    """Get data from Roboflow.
 
     Interface function for any method of getting data.
     """
-
     return get_data_roboflow(*args, **kwargs)
