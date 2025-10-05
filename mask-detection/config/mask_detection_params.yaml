@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    segmentation_image_color_sub_topic: "/cam_segmentation/image_color"
+    segmentation_image_id_sub_topic:    "/cam_segmentation/image_raw"
