@@ -1,4 +1,4 @@
-# Path: YOLO-detect-buoys/utils/get_device.py
+# Path: YOLO-detect-buoys/utils/get_data.py
 
 """Get data from Roboflow."""
 
