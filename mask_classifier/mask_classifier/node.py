@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-import os, json, csv
+"""ROS 2 node that classifies segmented objects and publishes Detection2DArray."""
+
+import csv
+import json
+import os
+from pathlib import Path
 from typing import Dict, Tuple, List
 
 import rclpy
@@ -14,11 +19,12 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 
-from pathlib import Path
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 
 class MaskClassifierNode(Node):
+    """Node that classifies segmented objects from color+id images."""
     def __init__(self):
+        """Initialize subscribers, publishers and load label maps."""
         super().__init__('mask_classifier_node')
 
         # Parameters
@@ -48,7 +54,6 @@ class MaskClassifierNode(Node):
         # Load legend
         self.id_to_bgr: Dict[int, Tuple[int,int,int]] = {}
         self._load_legend()
-
         self.get_logger().info('mask_classifier_node ready.')
 
         # --- Label mapping persistent ---
@@ -68,19 +73,20 @@ class MaskClassifierNode(Node):
             self.get_logger().warn('legend.csv not found (optional). Continuing without id->color map.')
             return
         try:
-            with open(path, 'r') as f:
+            with open(path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     _id = int(row['id'])
-                    b = int(row['b']); 
-                    g = int(row['g']); 
+                    b = int(row['b'])
+                    g = int(row['g'])
                     r = int(row['r'])
                     self.id_to_bgr[_id] = (b, g, r)
             self.get_logger().info(f'Loaded legend with {len(self.id_to_bgr)} ids.')
-        except Exception as e:
+        except (OSError, ValueError, KeyError) as e:
             self.get_logger().warn(f'Could not read legend.csv: {e}')
 
     def synchronization_callback(self, color_msg: Image, id_msg: Image):
+        """Callback with synchronized color and id images."""
         # Convert to OpenCV
         color = self.bridge.imgmsg_to_cv2(color_msg, desired_encoding='bgr8')
         ids   = self.bridge.imgmsg_to_cv2(id_msg)  # asume uint16
@@ -96,12 +102,10 @@ class MaskClassifierNode(Node):
         unique_ids, counts = np.unique(ids_flat, return_counts=True)
 
         # Filter small objects
-        valid = [(int(i), int(c)) 
-                 for i, c in zip(unique_ids, counts) 
-                    if c >= self.min_pixels and i != 0]
+        valid = [(int(i), int(c)) for i, c in zip(unique_ids, counts) if c >= self.min_pixels and i != 0]
         if not valid:
             # Publish empty scene
-            self._publish_scene('empty', color_msg.header.stamp)
+            self._publish_scene('empty')
             self._publish_objects([], color_msg.header)
             return
 
@@ -109,7 +113,7 @@ class MaskClassifierNode(Node):
         # Create a mask map by id (careful with memory if there are many ids)
         objects: List[Detection2D] = []
         for obj_id, pix in valid:
-            mask = (ids == obj_id)
+            mask = ids == obj_id
 
             ys, xs = np.where(mask)
             if ys.size == 0:
@@ -151,8 +155,10 @@ class MaskClassifierNode(Node):
             cy = int(det.bbox.center.position.y)
             w  = int(det.bbox.size_x)
             h  = int(det.bbox.size_y)
-            x1 = max(0, cx - w // 2); y1 = max(0, cy - h // 2)
-            x2 = min(debug.shape[1]-1, x1 + w); y2 = min(debug.shape[0]-1, y1 + h)
+            x1 = max(0, cx - w // 2)
+            y1 = max(0, cy - h // 2)
+            x2 = min(debug.shape[1]-1, x1 + w)
+            y2 = min(debug.shape[0]-1, y1 + h)
             cv2.rectangle(debug, (x1, y1), (x2, y2), (0,255,0), 2)
             # optional: put class text
             if det.results:
@@ -160,15 +166,17 @@ class MaskClassifierNode(Node):
                 cv2.putText(debug, cls, (x1, max(0, y1-5)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
 
         self.debug_img_pub.publish(self.bridge.cv2_to_imgmsg(debug, encoding='bgr8'))
-        self._publish_scene(scene_label, color_msg.header.stamp)
+        self._publish_scene(scene_label)
         self._publish_objects(objects, color_msg.header)
 
-    def _publish_scene(self, label: str, stamp):
+    def _publish_scene(self, label: str):
+        """Publish a high-level scene label as std_msgs/String."""
         msg = String()
         msg.data = label
         self.scene_pub.publish(msg)
 
     def _publish_objects(self, detections: List[Detection2D], header):
+        """Publish a Detection2DArray with computed bounding boxes and scores."""
         arr = Detection2DArray()
         arr.header = header
         arr.detections = detections
@@ -179,7 +187,7 @@ class MaskClassifierNode(Node):
         if not self.id_to_bgr:
             return
         added = 0
-        for obj_id in self.id_to_bgr.keys():
+        for obj_id in self.id_to_bgr:
             if obj_id not in self.id_to_label:
                 if obj_id == 0:
                     label = "background"
@@ -201,22 +209,22 @@ class MaskClassifierNode(Node):
         if path.exists():
             try:
                 if path.suffix.lower() == '.json':
-                    with open(path, 'r') as f:
+                    with open(path, 'r', encoding='utf-8') as f:
                         raw = json.load(f)
                     # keys can come as str -> convert to int
                     self.id_to_label = {int(k): str(v) for k, v in raw.items()}
                 elif path.suffix.lower() == '.csv':
-                    with open(path, newline='') as f:
+                    with open(path, newline='', encoding='utf-8') as f:
                         for r in csv.DictReader(f):
                             self.id_to_label[int(r['id'])] = str(r['label'])
                 else:
                     self.get_logger().warn(f"Extensión no soportada para id_label_map: {path.suffix}, usaré JSON.")
-                    with open(path, 'r') as f:
+                    with open(path, 'r', encoding='utf-8') as f:
                         raw = json.load(f)
                     self.id_to_label = {int(k): str(v) for k, v in raw.items()}
                 self.get_logger().info(f"Cargado id_label_map con {len(self.id_to_label)} entradas de {path}.")
                 return
-            except Exception as e:
+            except (OSError, ValueError, KeyError) as e:
                 self.get_logger().warn(f"No pude leer id_label_map {path}: {e}. Creo uno nuevo.")
 
         # Empty bootstrap (no pre-fill); adding IDs on the fly
@@ -229,16 +237,16 @@ class MaskClassifierNode(Node):
         p = Path(self.id_label_map_path)
         try:
             if p.suffix.lower() == '.csv':
-                with open(p, 'w', newline='') as f:
+                with open(p, 'w', newline='', encoding='utf-8') as f:
                     w = csv.writer(f)
                     w.writerow(['id', 'label'])
                     for k in sorted(self.id_to_label.keys()):
                         w.writerow([k, self.id_to_label[k]])
             else:  # json by default
-                with open(p, 'w') as f:
+                with open(p, 'w', encoding='utf-8') as f:
                     json.dump({str(k): self.id_to_label[k] for k in sorted(self.id_to_label.keys())}, f, indent=2)
             self._label_map_dirty = False
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             self.get_logger().warn(f"Error saving id_label_map: {e}")
 
     def _label_for_id(self, obj_id: int) -> str:
@@ -260,6 +268,7 @@ class MaskClassifierNode(Node):
 
 
 def main():
+    """Entrypoint: init ROS, spin node, then shutdown."""
     rclpy.init()
     node = MaskClassifierNode()
     try:

@@ -1,10 +1,11 @@
+"""Launch file for mask_classifier node."""
 import os
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    # Get the home directory
+    """Create LaunchDescription for mask_classifier."""
     home = os.environ.get("HOME", "/tmp")
     legend_csv_path = os.path.join(home, "seg_frames", "legend.csv")
     label_map = os.path.join(home, "seg_frames", "id_label_map.json")
