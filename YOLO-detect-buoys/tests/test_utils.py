@@ -8,7 +8,7 @@ from utils import get_data, get_device
 
 
 def test_get_device() -> None:
-    """Test the get_device function. 
+    """Test the get_device function.
 
     This makes sure that if the function is changed, the tests verifies that
     the function returns the expected device.
