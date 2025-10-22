@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'yolo_node = vortex_image_segmentation.yolo_node:main'
+            'yolo_node = vortex_image_segmentation.yolo_node:main',
+            'unet_node = vortex_image_segmentation.unet_node:main'
         ],
     },
 )
