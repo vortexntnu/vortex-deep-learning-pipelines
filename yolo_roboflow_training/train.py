@@ -42,9 +42,17 @@ dataset = project.version(VERSION).download("yolov8")
 model = YOLO(MODEL_TYPE)
 data_yaml_path = os.path.join(dataset.location, "data.yaml")
 
-if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is not available. Ensure your environment supports GPU acceleration.")
-print(f"Using GPU: {torch.cuda.get_device_name(0)}")
+
+# Select device: CUDA, MPS (Apple Silicon), or CPU
+if torch.cuda.is_available():
+    device = 0
+    print(f"Using CUDA GPU: {torch.cuda.get_device_name(0)}")
+elif hasattr(torch, 'has_mps') and torch.has_mps:
+    device = 'mps'
+    print("Using Apple Silicon MPS device.")
+else:
+    device = 'cpu'
+    print("Using CPU.")
 
 # Train the YOLOv8 model
 model.train(
@@ -52,7 +60,7 @@ model.train(
     epochs=EPOCHS,
     imgsz=IMGSZ,
     batch=BATCH,
-    device=0,
+    device=device,
     project=RESULTS_DIR,
     name="custom_yolov8"
 )
