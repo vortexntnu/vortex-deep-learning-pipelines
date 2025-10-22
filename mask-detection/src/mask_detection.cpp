@@ -53,11 +53,13 @@ MaskDetectionNode::MaskDetectionNode(const rclcpp::NodeOptions& options)
     for (const auto& entry : std::filesystem::directory_iterator(seg_dir)) {
         const auto& path = entry.path();
         auto name = path.filename().string();
-        if (std::regex_match(name, std::regex("frame_.*\\.(tiff|csv)"))) {
+        if (std::regex_match(name, std::regex("frame_.*\\.(tiff|csv|png|jpg)"))) {
             std::filesystem::remove(path);
         }
     }
-    RCLCPP_INFO(get_logger(), "Cleaning: files frame_*.tiff and frame_*_stats.csv removed in %s", seg_dir.c_str());
+    RCLCPP_INFO(get_logger(),
+        "Cleaning: files frame_*.tiff, frame_*_stats.csv y frame_*_color.(png|jpg) removidos en %s",
+        seg_dir.c_str());
 }
 // ================= Segmentation Image Callbacks ============================
 void MaskDetectionNode::synchronized_callback(
@@ -128,7 +130,15 @@ void MaskDetectionNode::try_build_legend_and_save_pair() {
                 seg_image_counter_, (long)sec, nsec);
         const auto path_ids = (out_dir_ / fname_ids).string();
         cv::imwrite(path_ids, id_cv);
-
+        cv::Mat color_cv = cv_bridge::toCvShare(last_seg_image_color_, "bgr8")->image;
+        char fname_color[256];
+        snprintf(fname_color, sizeof(fname_color),
+                "frame_%06d_%ld_%09u_color.png",
+                seg_image_counter_, (long)sec, nsec);
+        const auto path_color = (out_dir_ / fname_color).string();
+        if (!cv::imwrite(path_color, color_cv)) {
+            RCLCPP_WARN(get_logger(), "No se pudo guardar la imagen de color en %s", path_color.c_str());
+        }
         const auto legend_path = (out_dir_ / "legend.csv").string();
         save_legend_csv(legend_path, sec, nsec);
         char fname_stats_fmt[256];
