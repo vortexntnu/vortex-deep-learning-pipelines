@@ -1,0 +1,4 @@
+yolo_segmentation_node:
+  ros__parameters:
+    model_path: "/path/to/yolo/model.pt"
+    confidence_threshold: 0.5

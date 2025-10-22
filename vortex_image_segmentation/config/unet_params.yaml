@@ -1,0 +1,4 @@
+unet_segmentation_node:
+  ros__parameters:
+    model_path: "/path/to/unet/model.pth"
+    mask_threshold: 0.5
