@@ -163,5 +163,10 @@ runs/
 *.pt
 *jpg
 
+# ROS 2 build artifacts
+install/
+build/
+log/
+
 # data
 data/
