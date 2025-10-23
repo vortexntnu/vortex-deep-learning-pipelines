@@ -1,5 +1,5 @@
 # General training parameters for YOLO Roboflow training
-project_name: "pipe-line-instance-seg-rxqdn"
+project_id: "pipe-line-instance-seg-rxqdn"
 version: "1"  # Dataset version number (exclude 'v')
 model_type: "yolov8n-seg.pt"
 epochs: 1
