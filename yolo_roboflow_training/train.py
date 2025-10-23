@@ -24,6 +24,7 @@ PROJECT_ID       = config["project_id"]
 VERSION          = config["version"]
 MODEL_TYPE       = config.get("model_type")
 EPOCHS           = config.get("epochs")
+PATIENCE         = config.get("patience")
 IMGSZ            = config.get("imgsz")
 BATCH            = config.get("batch")
 RESULTS_DIR      = config.get("results_dir")
@@ -67,6 +68,7 @@ print(f"Using {WORKERS} workers")
 model.train(
     data=str(data_yaml_path),
     epochs=EPOCHS,
+    patience=PATIENCE,
     imgsz=IMGSZ,
     batch=BATCH,
     device=device,
