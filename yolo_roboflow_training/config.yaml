@@ -2,7 +2,8 @@
 project_id: "pipe-line-instance-seg-rxqdn"
 version: "1"  # Dataset version number (exclude 'v')
 model_type: "yolov8n-seg.pt"
-epochs: 1
+epochs: 5
+patience: 2
 imgsz: 640
 batch: 16
 results_dir: "results"
