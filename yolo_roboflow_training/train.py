@@ -21,18 +21,20 @@ with open("config.yaml", "r") as f:
 # Parameters
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY")
 PROJECT_ID       = config["project_id"]
-VERSION = config["version"]
-MODEL_TYPE = config.get("model_type")
-EPOCHS = config.get("epochs")
-IMGSZ = config.get("imgsz")
-BATCH = config.get("batch")
-RESULTS_DIR = config.get("results_dir")
-EXPORT_FORMATS = config.get("export_formats")
-DATASET_FORMAT = config.get("dataset_format")
+VERSION          = config["version"]
+MODEL_TYPE       = config.get("model_type")
+EPOCHS           = config.get("epochs")
+IMGSZ            = config.get("imgsz")
+BATCH            = config.get("batch")
+RESULTS_DIR      = config.get("results_dir")
+EXPORT_FORMATS   = config.get("export_formats")
+DATASET_FORMAT   = config.get("dataset_format")
 
 if not ROBOFLOW_API_KEY:
     raise ValueError("ROBOFLOW_API_KEY not set in environment or .env file.")
 
+
+# Download dataset from Roboflow into 'roboflow_data/'
 roboflow_data_dir = Path(__file__).parent / "roboflow_data"
 roboflow_data_dir.mkdir(exist_ok=True)
 rf       = Roboflow(api_key=ROBOFLOW_API_KEY)
@@ -61,21 +63,24 @@ else:
 
 WORKERS = os.cpu_count() // 2 if os.cpu_count() else 2
 print(f"Using {WORKERS} workers")
+
 model.train(
     data=str(data_yaml_path),
-        epochs=EPOCHS,
-        imgsz=IMGSZ,
-        batch=BATCH,
-        device=device,
+    epochs=EPOCHS,
+    imgsz=IMGSZ,
+    batch=BATCH,
+    device=device,
     project=str(RESULTS_DIR),
-        name="custom_yolov8",
-        workers=WORKERS,
-        # compile=True
-    )
+    name="custom_yolov8",
+    workers=WORKERS,
+    # compile=True
+)
+
 
 # Evaluate the model
 metrics = model.val(data=str(data_yaml_path))
 print(f"Validation metrics: {metrics}")
+
 
 # Export the trained model
 for fmt in EXPORT_FORMATS:
