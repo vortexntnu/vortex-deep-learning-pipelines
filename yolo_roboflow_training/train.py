@@ -55,16 +55,19 @@ else:
     device = 'cpu'
     print("Using CPU.")
 
-# Train the YOLOv8 model
+WORKERS = os.cpu_count() // 2 if os.cpu_count() else 2
+print(f"Using {WORKERS} workers")
 model.train(
-    data=data_yaml_path,
-    epochs=EPOCHS,
-    imgsz=IMGSZ,
-    batch=BATCH,
-    device=device,
-    project=RESULTS_DIR,
-    name="custom_yolov8"
-)
+        data=data_yaml_path,
+        epochs=EPOCHS,
+        imgsz=IMGSZ,
+        batch=BATCH,
+        device=device,
+        project=RESULTS_DIR,
+        name="custom_yolov8",
+        workers=WORKERS,
+        # compile=True
+    )
 
 # Evaluate the model
 metrics = model.val(data=data_yaml_path)
