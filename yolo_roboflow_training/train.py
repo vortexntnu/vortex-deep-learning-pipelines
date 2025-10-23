@@ -19,7 +19,7 @@ with open("config.yaml", "r") as f:
 
 # Parameters
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY")
-PROJECT_NAME = config["project_name"]
+PROJECT_ID       = config["project_id"]
 VERSION = config["version"]
 MODEL_TYPE = config.get("model_type")
 EPOCHS = config.get("epochs")
@@ -32,9 +32,7 @@ DATASET_FORMAT = config.get("dataset_format")
 if not ROBOFLOW_API_KEY:
     raise ValueError("ROBOFLOW_API_KEY not set in environment or .env file.")
 
-# Download dataset from Roboflow
-rf = Roboflow(api_key=ROBOFLOW_API_KEY)
-project = rf.workspace().project(PROJECT_NAME)
+project  = rf.workspace().project(PROJECT_ID)
 versions = project.versions()
 # print(f"Available versions: {[v['id'] for v in versions]}")
 dataset = project.version(VERSION).download(DATASET_FORMAT)
