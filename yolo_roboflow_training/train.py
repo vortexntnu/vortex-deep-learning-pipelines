@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 import torch
@@ -32,14 +33,19 @@ DATASET_FORMAT = config.get("dataset_format")
 if not ROBOFLOW_API_KEY:
     raise ValueError("ROBOFLOW_API_KEY not set in environment or .env file.")
 
+roboflow_data_dir = Path(__file__).parent / "roboflow_data"
+roboflow_data_dir.mkdir(exist_ok=True)
+rf       = Roboflow(api_key=ROBOFLOW_API_KEY)
 project  = rf.workspace().project(PROJECT_ID)
 versions = project.versions()
-# print(f"Available versions: {[v['id'] for v in versions]}")
-dataset = project.version(VERSION).download(DATASET_FORMAT)
+dataset  = project.version(VERSION).download(
+    DATASET_FORMAT, location=str(roboflow_data_dir)
+)
 
 # Set up training configuration
 model = YOLO(MODEL_TYPE)
-data_yaml_path = os.path.join(dataset.location, "data.yaml")
+subfolder_name = f"{dataset.name.replace(' ', '-')}-{VERSION}"
+data_yaml_path = Path(dataset.location) / subfolder_name / "data.yaml"
 
 
 # Select device: CUDA, MPS (Apple Silicon), or CPU
@@ -56,19 +62,19 @@ else:
 WORKERS = os.cpu_count() // 2 if os.cpu_count() else 2
 print(f"Using {WORKERS} workers")
 model.train(
-        data=data_yaml_path,
+    data=str(data_yaml_path),
         epochs=EPOCHS,
         imgsz=IMGSZ,
         batch=BATCH,
         device=device,
-        project=RESULTS_DIR,
+    project=str(RESULTS_DIR),
         name="custom_yolov8",
         workers=WORKERS,
         # compile=True
     )
 
 # Evaluate the model
-metrics = model.val(data=data_yaml_path)
+metrics = model.val(data=str(data_yaml_path))
 print(f"Validation metrics: {metrics}")
 
 # Export the trained model

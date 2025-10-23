@@ -187,4 +187,3 @@ data/
 # Training outputs and Roboflow datasets
 results/
 roboflow_data/
-pipe-line-instance-seg-1
