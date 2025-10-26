@@ -9,7 +9,7 @@ coverage:
           - unittests
     patch: off
 fixes:
-  - "ros_ws/src/vortex_auv/::"
+  - "ros_ws/src/vortex_deep_learning_pipelines/::"
 comment:
   layout: "diff, flags, files"
   behavior: default
