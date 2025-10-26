@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    yolo_model: 'best_v9_medium.pt'
+    model_conf: 0.1
+    color_image_sub_topic: '/zed_node/left/image_rect_color'
+    yolo_detections_pub_topic: '/yolo_object_detection/detections'
+    yolo_annotated_pub_topic: '/yolo_object_detection/annotated'
+    device: 'cpu' # or '0' for GPU
