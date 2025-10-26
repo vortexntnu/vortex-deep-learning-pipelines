@@ -1,0 +1,36 @@
+{
+    "name": "vortex-image-segmentation-devcontainer",
+    "image": "vortex-image-segmentation:latest",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "ms-vscode.cpptools",
+                "ranch-hand-robotics.rde-pack",
+                "ms-python.vscode-pylance",
+                "ms-python.pylint",
+                "twxs.cmake",
+                "ms-vsliveshare.vsliveshare",
+                "eamodio.gitlens",
+                "njpwerner.autodocstring",
+                "cschlosser.doxdocgen",
+                "xaver.clang-format",
+                "visualstudioexptteam.vscodeintellicode",
+                "ms-vscode-remote.remote-ssh",
+                "gxl.git-graph-3"
+            ]
+        }
+    },
+    "remoteUser": "devuser",
+    "workspaceFolder": "/ros2_ws",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/ros2_ws,type=bind,consistency=cached",
+    "runArgs": [
+        "--privileged",
+        "--network=host",
+        "--ipc=host",
+        "--user=1000:1000"
+    ]
+}
