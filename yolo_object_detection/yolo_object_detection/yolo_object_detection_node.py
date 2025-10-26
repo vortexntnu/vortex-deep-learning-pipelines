@@ -65,7 +65,8 @@ class YoloObjectDetection(Node):
             self.get_logger().error(f"Model not found: {mp}")
             raise FileNotFoundError(mp)
 
-        self.model, self.conf = yolo_utils.load_model(mp, self.model_conf)
+        self.model = yolo_utils.load_model(mp, self.model_conf)
+        self.conf = self.model_conf
 
     def on_image(self, msg: Image):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
