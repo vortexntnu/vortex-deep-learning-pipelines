@@ -26,6 +26,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+#VSCode
+.vscode/
+
 # OS Generated files
 .DS_Store
 .DS_Store?
