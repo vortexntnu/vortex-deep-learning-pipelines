@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from .unet_parts import *
+from .unet_parts import DoubleConv, Down, OutConv, Up
 
 
 class UNet(nn.Module):
