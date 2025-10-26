@@ -1,7 +1,9 @@
-import yaml
-import torch
 from dataclasses import dataclass
-from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
+
+import torch
+import yaml
+from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
+
 
 @dataclass
 class UnetSegmentationConfig:
@@ -23,7 +25,7 @@ class UnetSegmentationConfig:
 
     @staticmethod
     def from_yaml(path: str) -> "UnetSegmentationConfig":
-        with open(path, "r") as f:
+        with open(path) as f:
             data = yaml.safe_load(f)
         p = data.get("unet_segmentation_node", {}).get("ros__parameters", {})
         device_name = p.get("device", "cuda" if torch.cuda.is_available() else "cpu")

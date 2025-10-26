@@ -1,17 +1,22 @@
 from typing import Tuple
+
+import cv2
 import numpy as np
 import torch
+import torchvision.transforms.functional as F
 from PIL import Image as PILImage
 from torchvision import transforms
-import torchvision.transforms.functional as F
-import cv2
 
 from .unet import UNet
 
 
-def predict_mask(net: torch.nn.Module, image_tensor: torch.Tensor, device: torch.device, out_threshold: float = 0.5) -> np.ndarray:
-    """
-    Performs inference on a single image tensor.
+def predict_mask(
+    net: torch.nn.Module,
+    image_tensor: torch.Tensor,
+    device: torch.device,
+    out_threshold: float = 0.5,
+) -> np.ndarray:
+    """Performs inference on a single image tensor.
     Returns a HxW mask (int64) with values in {0,1,...,n_classes-1} for multi-class
     or {0,1} for binary models.
     """
@@ -28,9 +33,13 @@ def predict_mask(net: torch.nn.Module, image_tensor: torch.Tensor, device: torch
     return mask[0].long().squeeze().numpy()
 
 
-def blend_image_and_mask(original_image: PILImage.Image, mask_array: np.ndarray, color: Tuple[int, int, int], alpha: float = 0.4) -> PILImage.Image:
-    """
-    Blends a mask over a PIL image using RGBA compositing.
+def blend_image_and_mask(
+    original_image: PILImage.Image,
+    mask_array: np.ndarray,
+    color: Tuple[int, int, int],
+    alpha: float = 0.4,
+) -> PILImage.Image:
+    """Blends a mask over a PIL image using RGBA compositing.
     """
     original_image = original_image.convert("RGBA")
     overlay = PILImage.new("RGBA", original_image.size, (0, 0, 0, 0))
@@ -42,11 +51,16 @@ def blend_image_and_mask(original_image: PILImage.Image, mask_array: np.ndarray,
 
 
 class ResizeIfLargerKeepAspect:
-    """
-    Downscale a PIL image only if it's larger than the target size, preserving aspect ratio.
+    """Downscale a PIL image only if it's larger than the target size, preserving aspect ratio.
     Never upscales.
     """
-    def __init__(self, max_width: int, max_height: int, interpolation=transforms.InterpolationMode.BILINEAR):
+
+    def __init__(
+        self,
+        max_width: int,
+        max_height: int,
+        interpolation=transforms.InterpolationMode.BILINEAR,
+    ):
         self.max_width = max_width
         self.max_height = max_height
         self.interpolation = interpolation
@@ -61,18 +75,25 @@ class ResizeIfLargerKeepAspect:
 
 
 def build_image_transforms(max_w: int, max_h: int) -> transforms.Compose:
+    """Returns a torchvision Compose that resizes (downscale only), converts to tensor, and normalizes.
     """
-    Returns a torchvision Compose that resizes (downscale only), converts to tensor, and normalizes.
-    """
-    return transforms.Compose([
-        ResizeIfLargerKeepAspect(max_width=max_w, max_height=max_h),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
-    ])
+    return transforms.Compose(
+        [
+            ResizeIfLargerKeepAspect(max_width=max_w, max_height=max_h),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
 
-def load_unet(model_path: str, n_classes: int, device: torch.device, bilinear: bool, simple: bool, logger=None) -> UNet:
+def load_unet(
+    model_path: str,
+    n_classes: int,
+    device: torch.device,
+    bilinear: bool,
+    simple: bool,
+    logger=None,
+) -> UNet:
     if logger:
         logger.info(f'Loading model from {model_path}')
         logger.info(f'Using device {device}')
@@ -96,16 +117,24 @@ def load_unet(model_path: str, n_classes: int, device: torch.device, bilinear: b
             logger.info('Model loaded!')
     except FileNotFoundError:
         if logger:
-            logger.fatal(f"Model file not found at {model_path}. Please check the path.")
+            logger.fatal(
+                f"Model file not found at {model_path}. Please check the path."
+            )
         raise
 
     net.to(device)
     net.eval()
     return net
 
-def upsample_mask_nearest(mask_np: np.ndarray, target_w: int, target_h: int) -> np.ndarray:
+
+def upsample_mask_nearest(
+    mask_np: np.ndarray, target_w: int, target_h: int
+) -> np.ndarray:
     """Upsample a HxW mask (int) to (target_h, target_w) via nearest-neighbor."""
-    return cv2.resize(mask_np.astype(np.uint8), (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+    return cv2.resize(
+        mask_np.astype(np.uint8), (target_w, target_h), interpolation=cv2.INTER_NEAREST
+    )
+
 
 def mask_to_mono8(mask_np: np.ndarray) -> np.ndarray:
     mask_np = mask_np.astype(np.uint8)
@@ -114,7 +143,10 @@ def mask_to_mono8(mask_np: np.ndarray) -> np.ndarray:
         return (mask_np * 255).astype(np.uint8)
     return mask_np
 
-def make_overlay(base_rgb_np: np.ndarray, mask_np: np.ndarray, color=(255,0,0), alpha=0.4) -> np.ndarray:
+
+def make_overlay(
+    base_rgb_np: np.ndarray, mask_np: np.ndarray, color=(255, 0, 0), alpha=0.4
+) -> np.ndarray:
     """Blend color onto base where mask==1 (binary) or mask>0 (multi-class)."""
     mask_bin = (mask_np > 0).astype(np.uint8)
     overlay = np.zeros_like(base_rgb_np)

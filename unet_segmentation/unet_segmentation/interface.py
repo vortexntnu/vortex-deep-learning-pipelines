@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
 
-import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+from pathlib import Path
+
 import cv2
 import numpy as np
+import rclpy
 import torch
-from PIL import Image as PILImage
-from pathlib import Path
-import sys
-from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
+from cv_bridge import CvBridge
+from PIL import Image as PILImage
+from rclpy.node import Node
+from sensor_msgs.msg import Image
 
 from unet_segmentation.config import UnetSegmentationConfig
 from unet_segmentation.utils import (
-    predict_mask, build_image_transforms, ResizeIfLargerKeepAspect,
-    upsample_mask_nearest, mask_to_mono8, make_overlay,
+    ResizeIfLargerKeepAspect,
+    build_image_transforms,
     load_unet,
+    make_overlay,
+    mask_to_mono8,
+    predict_mask,
+    upsample_mask_nearest,
 )
+
 
 def default_config_path() -> str:
     share_dir = Path(get_package_share_directory('unet_segmentation'))
     return str(share_dir / 'config' / 'unet_segmentation.yaml')
+
 
 class UnetSegmentationNode(Node):
     def __init__(self, config_path: str | None = None):
@@ -62,11 +67,17 @@ class UnetSegmentationNode(Node):
             logger=self.get_logger(),
         )
 
-        self.image_transforms = build_image_transforms(self.cfg.resize_width, self.cfg.resize_height)
+        self.image_transforms = build_image_transforms(
+            self.cfg.resize_width, self.cfg.resize_height
+        )
         qos_profile = UnetSegmentationConfig.qos_profile(self.cfg.qos_depth)
 
-        self.subscription = self.create_subscription(Image, self.cfg.input_topic, self.image_callback, qos_profile)
-        self.overlay_pub = self.create_publisher(Image, self.cfg.overlay_topic, qos_profile)
+        self.subscription = self.create_subscription(
+            Image, self.cfg.input_topic, self.image_callback, qos_profile
+        )
+        self.overlay_pub = self.create_publisher(
+            Image, self.cfg.overlay_topic, qos_profile
+        )
         self.mask_pub = self.create_publisher(Image, self.cfg.mask_topic, qos_profile)
 
         self.get_logger().info(
@@ -82,12 +93,19 @@ class UnetSegmentationNode(Node):
             pil_img = PILImage.fromarray(base_rgb)
 
             # Resize (downscale only) for inference
-            resized_pil = ResizeIfLargerKeepAspect(self.cfg.resize_width, self.cfg.resize_height)(pil_img)
+            resized_pil = ResizeIfLargerKeepAspect(
+                self.cfg.resize_width, self.cfg.resize_height
+            )(pil_img)
             resized_w, resized_h = resized_pil.size
             image_tensor = self.image_transforms(resized_pil)
 
             # Predict (in resized space)
-            pred_mask = predict_mask(self.net, image_tensor, self.device, out_threshold=self.cfg.mask_threshold)
+            pred_mask = predict_mask(
+                self.net,
+                image_tensor,
+                self.device,
+                out_threshold=self.cfg.mask_threshold,
+            )
 
             # Optionally upsample mask to original size
             if self.cfg.keep_original_size:
@@ -99,8 +117,10 @@ class UnetSegmentationNode(Node):
 
             # Build overlay at the chosen size
             overlay_np = make_overlay(
-                base_for_overlay, mask_out if self.cfg.keep_original_size else pred_mask,
-                color=self.cfg.pred_color, alpha=self.cfg.overlay_alpha
+                base_for_overlay,
+                mask_out if self.cfg.keep_original_size else pred_mask,
+                color=self.cfg.pred_color,
+                alpha=self.cfg.overlay_alpha,
             )
 
             # Publish mask (mono8) and overlay (rgb8)
@@ -116,12 +136,14 @@ class UnetSegmentationNode(Node):
         except Exception as e:
             self.get_logger().error(f'Failed to process image: {e}')
 
+
 def main():
     rclpy.init()
     node = UnetSegmentationNode(default_config_path())
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
