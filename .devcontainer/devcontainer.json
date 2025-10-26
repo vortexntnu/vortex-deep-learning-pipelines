@@ -19,7 +19,8 @@
                 "xaver.clang-format",
                 "visualstudioexptteam.vscodeintellicode",
                 "ms-vscode-remote.remote-ssh",
-                "gxl.git-graph-3"
+                "gxl.git-graph-3",
+                "ms-vscode-remote.remote-containers"
             ]
         }
     },
