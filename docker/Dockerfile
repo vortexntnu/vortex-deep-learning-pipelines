@@ -47,11 +47,6 @@ RUN pip3 install -r ${WORKSPACE}/requirements.txt
 COPY . ${WORKSPACE}
 
 # ----------------------------------------------------------------------------
-# Install Python dependencies (if requirements.txt exists)
-# ----------------------------------------------------------------------------
-RUN if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
-
-# ----------------------------------------------------------------------------
 # Install ROS dependencies
 # ----------------------------------------------------------------------------
 RUN rosdep update && rosdep install --from-paths . --ignore-src -r -y
