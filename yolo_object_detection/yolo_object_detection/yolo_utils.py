@@ -6,7 +6,7 @@ from ultralytics import YOLO
 
 def load_model(model_path, conf):
     model = YOLO(model_path)
-    return model, conf
+    return model
 
 
 def process_frame(frame, model, conf, device):
