@@ -34,6 +34,13 @@ RUN apt-get update && apt-get install -y \
 # ----------------------------------------------------------------------------
 RUN pip3 install cython
 
+
+# ----------------------------------------------------------------------------
+# Copy requirements.txt and install Python dependencies first for better caching
+# ----------------------------------------------------------------------------
+COPY requirements.txt ${WORKSPACE}/requirements.txt
+RUN pip3 install -r ${WORKSPACE}/requirements.txt
+
 # ----------------------------------------------------------------------------
 # Copy Workspace Files
 # ----------------------------------------------------------------------------
