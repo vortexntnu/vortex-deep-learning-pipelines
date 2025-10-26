@@ -67,9 +67,9 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
 # ----------------------------------------------------------------------------
-# Source ROS setup in bashrc
+# Source user bashrc_extra.sh in bashrc
 # ----------------------------------------------------------------------------
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
+RUN echo "if [ -f /ros2_ws/scripts/bashrc_extra.sh ]; then source /ros2_ws/scripts/bashrc_extra.sh; fi" >> ~/.bashrc
 
 # ----------------------------------------------------------------------------
 # Default command
