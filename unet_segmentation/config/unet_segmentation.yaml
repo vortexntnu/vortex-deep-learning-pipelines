@@ -1,6 +1,6 @@
 unet_segmentation_node:
   ros__parameters:
-    model_path: "/home/gard/ros2_ws/src/vortex-deep-learning-pipelines/unet_segmentation/model/unet-simple-320-240-l-5-e10-b16(1).pth"
+    model_path: "model/unet-simple-320-240-l-5-e10-b16(1).pth"
     input_topic: "cam_down/image_color"
     overlay_topic: "/segmentation/overlay"
     mask_topic: "/segmentation/mask"
