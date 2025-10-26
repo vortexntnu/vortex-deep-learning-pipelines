@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import cv2
 import numpy as np
 import torch
@@ -17,6 +15,7 @@ def predict_mask(
     out_threshold: float = 0.5,
 ) -> np.ndarray:
     """Performs inference on a single image tensor.
+
     Returns a HxW mask (int64) with values in {0,1,...,n_classes-1} for multi-class
     or {0,1} for binary models.
     """
@@ -36,7 +35,7 @@ def predict_mask(
 def blend_image_and_mask(
     original_image: PILImage.Image,
     mask_array: np.ndarray,
-    color: Tuple[int, int, int],
+    color: tuple[int, int, int],
     alpha: float = 0.4,
 ) -> PILImage.Image:
     """Blends a mask over a PIL image using RGBA compositing."""
@@ -50,9 +49,7 @@ def blend_image_and_mask(
 
 
 class ResizeIfLargerKeepAspect:
-    """Downscale a PIL image only if it's larger than the target size, preserving aspect ratio.
-    Never upscales.
-    """
+    """Downscale a PIL image only if it's larger than the target size, preserving aspect ratio. Never upscales."""
 
     def __init__(
         self,
@@ -145,7 +142,6 @@ def mask_to_mono8(mask_np: np.ndarray) -> np.ndarray:
 def make_overlay(
     base_rgb_np: np.ndarray, mask_np: np.ndarray, color=(255, 0, 0), alpha=0.4
 ) -> np.ndarray:
-    """Blend color onto base where mask==1 (binary) or mask>0 (multi-class)."""
     mask_bin = (mask_np > 0).astype(np.uint8)
     overlay = np.zeros_like(base_rgb_np)
     overlay[mask_bin == 1] = np.array(color, dtype=np.uint8)

@@ -13,7 +13,7 @@ class UNet(nn.Module):
         :param simple: If True, creates a smaller U-Net with fewer layers.
         :param bilinear: If True, use bilinear upsampling instead of transposed convolutions.
         """
-        super(UNet, self).__init__()
+        super().__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear

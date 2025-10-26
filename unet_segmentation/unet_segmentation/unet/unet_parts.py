@@ -1,4 +1,4 @@
-"""Parts of the U-Net model"""
+"""Parts of the U-Net model."""
 
 import torch
 import torch.nn as nn
@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 
 class DoubleConv(nn.Module):
-    """(convolution => [BN] => ReLU) * 2"""
+    """(convolution => [BN] => ReLU) * 2."""
 
     def __init__(self, in_channels, out_channels, mid_channels=None):
         super().__init__()
@@ -26,7 +26,7 @@ class DoubleConv(nn.Module):
 
 
 class Down(nn.Module):
-    """Downscaling with maxpool then double conv"""
+    """Downscaling with maxpool then double conv."""
 
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -39,7 +39,7 @@ class Down(nn.Module):
 
 
 class Up(nn.Module):
-    """Upscaling then double conv"""
+    """Upscaling then double conv."""
 
     def __init__(self, in_channels, out_channels, bilinear=True):
         super().__init__()
@@ -70,7 +70,7 @@ class Up(nn.Module):
 
 class OutConv(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(OutConv, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
 
     def forward(self, x):
