@@ -63,8 +63,7 @@ class UNet(nn.Module):
         return logits
 
     def use_checkpointing(self):
-        """Enable gradient checkpointing to save memory, but at the cost of additional computation during backpropagation.
-        """
+        """Enable gradient checkpointing to save memory, but at the cost of additional computation during backpropagation."""
         if not self.simple:
             self.inc = torch.utils.checkpoint.checkpoint(self.inc)
             self.down1 = torch.utils.checkpoint.checkpoint(self.down1)

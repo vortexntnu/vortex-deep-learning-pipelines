@@ -39,8 +39,7 @@ def blend_image_and_mask(
     color: Tuple[int, int, int],
     alpha: float = 0.4,
 ) -> PILImage.Image:
-    """Blends a mask over a PIL image using RGBA compositing.
-    """
+    """Blends a mask over a PIL image using RGBA compositing."""
     original_image = original_image.convert("RGBA")
     overlay = PILImage.new("RGBA", original_image.size, (0, 0, 0, 0))
     overlay_np = np.array(overlay)
@@ -75,8 +74,7 @@ class ResizeIfLargerKeepAspect:
 
 
 def build_image_transforms(max_w: int, max_h: int) -> transforms.Compose:
-    """Returns a torchvision Compose that resizes (downscale only), converts to tensor, and normalizes.
-    """
+    """Returns a torchvision Compose that resizes (downscale only), converts to tensor, and normalizes."""
     return transforms.Compose(
         [
             ResizeIfLargerKeepAspect(max_width=max_w, max_height=max_h),
