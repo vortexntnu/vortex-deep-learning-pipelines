@@ -1,0 +1,17 @@
+unet_segmentation_node:
+  ros__parameters:
+    model_path: "/home/gard/ros2_ws/src/vortex-deep-learning-pipelines/unet_segmentation/model/unet-simple-320-240-l-5-e10-b16(1).pth"
+    input_topic: "cam_down/image_color"
+    overlay_topic: "/segmentation/overlay"
+    mask_topic: "/segmentation/mask"
+    resize_width: 320
+    resize_height: 240
+    keep_original_size: true     # upsample mask/overlay back to source image size
+    mask_threshold: 0.5
+    bilinear: false
+    simple: true
+    classes: 1
+    device: "cuda"
+    pred_color: [255, 0, 0]
+    overlay_alpha: 0.4
+    qos_depth: 3
