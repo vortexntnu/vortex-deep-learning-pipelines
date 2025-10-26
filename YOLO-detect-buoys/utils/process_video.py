@@ -1,6 +1,4 @@
-"""
-The function to use YOLOv8 to process a video.
-"""
+"""The function to use YOLOv8 to process a video."""
 
 from collections import defaultdict
 
@@ -11,25 +9,18 @@ from ultralytics import YOLO
 
 
 def process_video(url: str, model: YOLO) -> None:
-    """
-    Process a video with YOLOv8 tracking.
-
-
+    """Process a video with YOLOv8 tracking.
 
     Args:
-    - url (str): The URL of the video to process.
-    - model (YOLO): The YOLOv8 model to use for tracking.
+        url (str): The URL of the video to process.
+        model (YOLO): The YOLOv8 model to use for tracking.
 
     Returns:
-    - None
+        None: This function saves the processed video locally.
 
-    Usage:
-    ```python
-    process_video("https://youtu.be/4WGpIOwkLA4?feature=shared", model)
-    ```
-
+    Example:
+        process_video("https://youtu.be/4WGpIOwkLA4?feature=shared", model)
     """
-
     video = new(url)
     best = video.getbest(preftype="mp4")
 
