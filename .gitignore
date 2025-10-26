@@ -185,7 +185,7 @@ build/
 log/
 
 # data
-data/
+bags/
 
 # Training outputs and Roboflow datasets
 results/
