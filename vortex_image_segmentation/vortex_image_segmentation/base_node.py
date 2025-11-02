@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
+
+import numpy as np
 import rclpy
+import torch
+from cv_bridge import CvBridge
+from PIL import Image as PILImage
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
 from torchvision import transforms
-from PIL import Image as PILImage
-import numpy as np
-import torch
 
 
 class BaseSegmentationNode(Node, ABC):
@@ -26,8 +27,8 @@ class BaseSegmentationNode(Node, ABC):
         self.bridge = CvBridge()
         self.mask_color = mask_color
         self.image_transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            transforms.Resize((640, 640)),
+            transforms.ToTensor()
         ])
         self.subscription = self.create_subscription(
             Image,
@@ -50,25 +51,9 @@ class BaseSegmentationNode(Node, ABC):
         blended_image = PILImage.alpha_composite(original_image, overlay)
         return blended_image.convert("RGB")
 
+    @abstractmethod
     def image_callback(self, msg):
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-            frame_rgb = cv_image[..., ::-1]
-            pil_img = PILImage.fromarray(frame_rgb)
-            image_tensor = self.image_transforms(pil_img)
-            mask_np, confidence = self.predict(image_tensor)
-            # If mask is probability, apply threshold
-            if mask_np.dtype != np.bool_ and mask_np.max() <= 1.0:
-                mask_np = (mask_np > self.mask_threshold).astype(np.uint8)
-            blended_img = self.blend_image_and_mask(pil_img, mask_np, color=self.mask_color)
-            blended_frame_rgb = np.array(blended_img)
-            output_msg = self.bridge.cv2_to_imgmsg(blended_frame_rgb, "rgb8")
-            output_msg.header = msg.header
-            self.publisher.publish(output_msg)
-            if confidence is not None:
-                self.get_logger().info(f'Confidence score: {confidence}')
-        except Exception as e:
-            self.get_logger().error(f'Failed to process image: {e}')
+        pass
 
     @abstractmethod
     def load_model(self):
@@ -78,4 +63,3 @@ class BaseSegmentationNode(Node, ABC):
     def predict(self, image_tensor):
         """Return mask_np, confidence (or None)"""
         pass
-
