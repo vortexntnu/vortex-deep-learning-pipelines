@@ -1,37 +1,62 @@
-# launch/unet_segmentation.launch.py
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
+
+ALLOWED_DEVICES = ['cpu', '0']
+
+
+def validate_device(device: str):
+    if device not in ALLOWED_DEVICES:
+        raise RuntimeError(
+            f"Invalid device '{device}'. Choose one of: {', '.join(ALLOWED_DEVICES)}"
+        )
+
+
+def launch_setup(context, *args, **kwargs):
+    device = LaunchConfiguration('device').perform(context)
+    validate_device(device)
+
+    unet_params = os.path.join(
+        get_package_share_directory('unet_segmentation'),
+        'config/unet_segmentation.yaml',
+    )
+    model_path = PathJoinSubstitution([
+        FindPackageShare('unet_segmentation'),
+        'model',
+        'unet-simple-320-240-l-5-e10-b16(1).pth'
+]   )
+
+
+    unet_node = Node(
+        package='unet_segmentation',
+        executable='unet_segmentation_node.py',
+        name='unet_segmentation',
+        namespace='unet',
+        output='screen',
+        parameters=[
+            unet_params,
+            {'device': device},
+            {'model_path': model_path},
+        ],
+    )
+
+    return [unet_node]
+
 
 def generate_launch_description():
-    pkg = DeclareLaunchArgument("package", default_value="unet_segmentation")
-    params_file = DeclareLaunchArgument(
-        "params_file",
-        default_value=PathJoinSubstitution(
-            [
-                FindPackageShare(LaunchConfiguration("package")),
-                "config",
-                "unet_segmentation.yaml",
-            ]
-        ),
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument(
+                'device',
+                default_value='0',
+                description='Device to run YOLO inference on (\'0\' for GPU or \'cpu\')',
+            ),
+            OpaqueFunction(function=launch_setup),
+        ]
     )
-    input_topic = DeclareLaunchArgument("input_topic", default_value="/image_color")
-
-    node = Node(
-        package=LaunchConfiguration("package"),
-        executable="interface.py",
-        name="unet_segmentation_node",
-        parameters=[LaunchConfiguration("params_file")],
-        remappings=[
-            ("/image_color", LaunchConfiguration("input_topic")),
-            # Overlay and mask topics come from YAML; remap here only if needed:
-            # ("/segmentation/overlay", "/your/overlay"),
-            # ("/segmentation/mask", "/your/mask"),
-        ],
-        output="screen",
-    )
-
-    return LaunchDescription([pkg, params_file, input_topic, node])

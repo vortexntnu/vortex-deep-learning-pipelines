@@ -15,7 +15,7 @@ install(DIRECTORY
 )
 
 install(PROGRAMS
-  ${PROJECT_NAME}/interface.py
+  ${PROJECT_NAME}/unet_segmentation_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

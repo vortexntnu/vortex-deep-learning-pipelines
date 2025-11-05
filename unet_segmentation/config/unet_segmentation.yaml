@@ -1,7 +1,6 @@
-unet_segmentation_node:
+/**:
   ros__parameters:
-    model_path: "model/unet-simple-320-240-l-5-e10-b16(1).pth"
-    input_topic: "cam_down/image_color"
+    input_topic: "/gripper_camera/image_raw"
     overlay_topic: "/segmentation/overlay"
     mask_topic: "/segmentation/mask"
     resize_width: 320
