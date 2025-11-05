@@ -25,12 +25,13 @@ def launch_setup(context, *args, **kwargs):
         get_package_share_directory('unet_segmentation'),
         'config/unet_segmentation.yaml',
     )
-    model_path = PathJoinSubstitution([
-        FindPackageShare('unet_segmentation'),
-        'model',
-        'unet-simple-320-240-l-5-e10-b16(1).pth'
-]   )
-
+    model_path = PathJoinSubstitution(
+        [
+            FindPackageShare('unet_segmentation'),
+            'model',
+            'unet-simple-320-240-l-5-e10-b16(1).pth',
+        ]
+    )
 
     unet_node = Node(
         package='unet_segmentation',
