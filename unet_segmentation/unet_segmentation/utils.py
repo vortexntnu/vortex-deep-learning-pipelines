@@ -4,6 +4,7 @@ import torch
 import torchvision.transforms.functional as F
 from PIL import Image as PILImage
 from torchvision import transforms
+import os
 
 from .unet import UNet
 
@@ -81,6 +82,7 @@ def build_image_transforms(max_w: int, max_h: int) -> transforms.Compose:
     )
 
 
+
 def load_unet(
     model_path: str,
     n_classes: int,
@@ -88,33 +90,33 @@ def load_unet(
     bilinear: bool,
     simple: bool,
     logger=None,
-) -> UNet:
+) -> "UNet":
+    # Resolve relative paths to absolute paths
+    model_path = os.path.abspath(os.path.expanduser(model_path))
+
     if logger:
         logger.info(f'Loading model from {model_path}')
         logger.info(f'Using device {device}')
         logger.info(f'simple={simple}, bilinear={bilinear}, n_classes={n_classes}')
 
-    # IMPORTANT: pass named args so simple/bilinear aren't swapped
+    # Create network with named args
     net = UNet(n_channels=3, n_classes=n_classes, simple=simple, bilinear=bilinear)
 
     try:
         state_dict = torch.load(model_path, map_location=device)
-        # tolerate extra trainer metadata
         _ = state_dict.pop('mask_values', None)
 
         missing, unexpected = net.load_state_dict(state_dict, strict=False)
 
         if logger:
             if missing:
-                logger.warn(f'Missing keys when loading: {missing}')
+                logger.warning(f'Missing keys when loading: {missing}')
             if unexpected:
-                logger.warn(f'Unexpected keys when loading: {unexpected}')
-            logger.info('Model loaded!')
+                logger.warning(f'Unexpected keys when loading: {unexpected}')
+            logger.info('Model loaded successfully!')
     except FileNotFoundError:
         if logger:
-            logger.fatal(
-                f"Model file not found at {model_path}. Please check the path."
-            )
+            logger.fatal(f"Model file not found at {model_path}. Please check the path.")
         raise
 
     net.to(device)

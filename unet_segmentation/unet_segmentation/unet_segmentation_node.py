@@ -47,14 +47,14 @@ class UnetSegmentationNode(Node):
         self.bridge = CvBridge()
 
         # Validate model path
-        model_p = Path(self.model_path).expanduser()
-        if not model_p.exists():
-            self.get_logger().fatal(f"Model file not found: {model_p}")
+        model_f = Path(self.model_file).expanduser()
+        if not model_f.exists():
+            self.get_logger().fatal(f"Model file not found: {model_f}")
             raise SystemExit(1)
 
         # Load network
         self.net = load_unet(
-            model_path=str(model_p),
+            model_file=str(model_f),
             n_classes=self.classes,
             device=self.device,
             bilinear=bool(self.bilinear),
@@ -86,7 +86,7 @@ class UnetSegmentationNode(Node):
     def _declare_and_load_parameters(self):
         """Declare parameters with defaults and bind them to attributes."""
         defaults = {
-            'model_path': 'model/unet.pth',
+            'model_file': 'model/unet.pth',
             'input_topic': 'image_raw',
             'overlay_topic': '/segmentation/overlay',
             'mask_topic': '/segmentation/mask',
@@ -107,7 +107,7 @@ class UnetSegmentationNode(Node):
             self.declare_parameter(name, default)
 
         # Bind as attributes
-        self.model_path = self.get_parameter('model_path').value
+        self.model_flie = self.get_parameter('model_file').value
         self.input_topic = self.get_parameter('input_topic').value
         self.overlay_topic = self.get_parameter('overlay_topic').value
         self.mask_topic = self.get_parameter('mask_topic').value
