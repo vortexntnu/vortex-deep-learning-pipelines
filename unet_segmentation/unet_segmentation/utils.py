@@ -1,10 +1,11 @@
+import os
+
 import cv2
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
 from PIL import Image as PILImage
 from torchvision import transforms
-import os
 
 from .unet import UNet
 
@@ -82,7 +83,6 @@ def build_image_transforms(max_w: int, max_h: int) -> transforms.Compose:
     )
 
 
-
 def load_unet(
     model_path: str,
     n_classes: int,
@@ -116,7 +116,9 @@ def load_unet(
             logger.info('Model loaded successfully!')
     except FileNotFoundError:
         if logger:
-            logger.fatal(f"Model file not found at {model_path}. Please check the path.")
+            logger.fatal(
+                f"Model file not found at {model_path}. Please check the path."
+            )
         raise
 
     net.to(device)
