@@ -2,8 +2,7 @@
 
 ## Overview
 
-**mask-detection** is a ROS 2 package designed to process segmentation camera images and extract object detections from labeled masks.  
-It is part of a broader perception pipeline for automatic data labeling and object tracking in simulation (e.g., the **Stonefish simulator**) or real-world camera streams.
+**mask-detection** is a ROS 2 package designed to process segmentation camera images.
 
 The package synchronizes segmentation color images and ID images and identifies objects based on color–ID mapping.
 
@@ -19,7 +18,7 @@ The package synchronizes segmentation color images and ID images and identifies 
 
 ---
 
-## Repository Structure
+## Structure
 
 ```
 
@@ -36,16 +35,9 @@ mask-detection/
 
 ---
 
-## Installation
+## Building
 
-1. Clone the repository inside your ROS 2 workspace:
-
-```bash
-cd ~/stonefish_ws/src
-git clone https://github.com/vortexntnu/vortex-deep-learning-pipelines
-````
-
-2. Build the package with `colcon`:
+Build the package with `colcon`:
 
 ```bash
 cd ~/stonefish_ws
@@ -60,7 +52,7 @@ source install/setup.bash
 You can launch the node with a ROS 2 launch file, e.g.:
 
 ```bash
-ros2 launch mask-detection mask-detection.launch.py
+ros2 launch mask_detection mask_detection.launch.py
 ```
 ---
 
@@ -70,8 +62,12 @@ Parameters are defined in `config/mask_detection_params.yaml`.
 Example:
 
 ```yaml
-segmentation_image_color_sub_topic: "/cam_segmentation/image_color"
-segmentation_image_id_sub_topic: "/cam_segmentation/image_id"
+    # Orca
+    # segmentation_image_color_sub_topic: "/cam_segmentation/image_color"
+    # segmentation_image_id_sub_topic:    "/cam_segmentation/image_raw"
+    # camera_rig
+    segmentation_image_color_sub_topic: "/front_camera_seg/image_color"
+    segmentation_image_id_sub_topic:    "/front_camera_seg/image_raw"
 ```
 
 | Parameter                            | Type   | Description                              |
@@ -112,7 +108,7 @@ This package can be integrated with:
 1. Run the Stonefish simulation with a segmentation camera enabled.
 2. Launch `mask-detection` to extract labeled object detections.
 3. Optionally record outputs with `mask_classifier`.
-4. Use generated masks and detections for model training (e.g., YOLOv8, UNet).
+4. Use generated masks and detections for model training (e.g., YOLOv8, UNet), it generates in the `$HOME\seg_frames` directory. It also generates a `legend.csv`.
 
 ---
 

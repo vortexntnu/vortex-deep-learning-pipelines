@@ -167,3 +167,7 @@ runs/
 
 # data
 data/
+
+roboflow/roboflow_*
+
+*.zip

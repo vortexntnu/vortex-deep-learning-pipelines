@@ -5,7 +5,7 @@ It subscribes to segmentation image topics and processes masks to extract class 
 
 ---
 
-## 🧩 Overview
+## Overview
 
 `mask_classifier` is designed to work with segmentation images (color and ID) produced by a segmentation camera, such as the one in the [Stonefish Simulator](https://pure.hw.ac.uk/ws/portalfiles/portal/146711343/2502.11887v1.pdf).  
 It classifies objects based on pixel-wise segmentation labels and exports annotated detections for downstream perception modules (e.g., YOLO training, or UNet segmentation).
@@ -18,7 +18,7 @@ Main features:
 
 ---
 
-## 🏗️ Package Structure
+## Package Structure
 
 ```
 
@@ -28,10 +28,12 @@ mask_classifier/
 ├── launch/
 │   └── mask_classifier.launch.py
 ├── mask_classifier/
-│   ├── **init**.py
+│   ├── __init__.py
 │   └── node.py
 ├── resource/
 │   └── mask_classifier
+├── scripts/
+│   └── live_mask_viewer.py
 ├── test/
 └── LICENSE
 
@@ -39,7 +41,7 @@ mask_classifier/
 
 ---
 
-## ⚙️ Dependencies
+## Dependencies
 
 Ensure the following are installed in your ROS 2 workspace:
 
@@ -57,7 +59,7 @@ pip install opencv-python numpy
 
 ---
 
-## 🚀 Building
+## Building
 
 Clone the package inside your ROS 2 workspace:
 
@@ -76,7 +78,7 @@ source install/setup.bash
 
 ---
 
-## ▶️ Running
+## Running
 
 Launch the node using the provided launch file:
 
@@ -95,7 +97,7 @@ ros2 launch mask_classifier mask_classifier.launch.py
 
 ---
 
-## 🧠 Node Description
+## Node Description
 
 ### `mask_classifier.node.MaskClassifierNode`
 
@@ -103,6 +105,10 @@ ros2 launch mask_classifier mask_classifier.launch.py
 * Converts images via `cv_bridge`.
 * Parses the legend CSV file to match ID → label.
 * Computes bounding boxes from mask regions.
+
+---
+## live_mask_viewer.py
+An interface that outstands the object selected from other objects. It uses the `id_label_map.json`.
 
 ---
 
@@ -113,6 +119,7 @@ Used within the Vortex or Stonefish simulation pipeline to:
 * Automatically label dataset frames.
 * Generate bounding boxes for YOLOv8.
 * Export pixel masks for UNet semantic segmentation.
+* Modify the ids in `id_label_map.json`, which is generated in `$HOME/seg_frames`.
 
 ---
 
