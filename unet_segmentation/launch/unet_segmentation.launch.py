@@ -25,13 +25,12 @@ def launch_setup(context, *args, **kwargs):
         get_package_share_directory('unet_segmentation'),
         'config/unet_segmentation.yaml',
     )
-    model_path = PathJoinSubstitution(
-        [
-            FindPackageShare('unet_segmentation'),
-            'model',
-            'unet-simple-320-240-l-5-e10-b16(1).pth',
-        ]
-    )
+    model_path = PathJoinSubstitution([
+        FindPackageShare('unet_segmentation'),
+        'model',
+        'unet-simple-320-240-l-5-e10-b16(1).pth'
+]   )
+
 
     unet_node = Node(
         package='unet_segmentation',
@@ -55,7 +54,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 'device',
                 default_value='0',
-                description='Device to run YOLO inference on (\'0\' for GPU or \'cpu\')',
+                description='run unet segmentation',
             ),
             OpaqueFunction(function=launch_setup),
         ]

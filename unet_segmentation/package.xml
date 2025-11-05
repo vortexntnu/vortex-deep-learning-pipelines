@@ -3,8 +3,8 @@
 <package format="3">
   <name>unet_segmentation</name>
   <version>0.0.0</version>
-  <description>YOLO inference on images, publishing detections and annotated outputs.</description>
-  <maintainer email="89779148+kluge7@users.noreply.github.com">kluge7</maintainer>
+  <description>unet segmentation on raw image</description>
+  <maintainer email="97710179+gardeg@users.noreply.github.com">gardeg</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
