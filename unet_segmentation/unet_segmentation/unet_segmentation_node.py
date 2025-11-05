@@ -85,7 +85,6 @@ class UnetSegmentationNode(Node):
 
     def _declare_and_load_parameters(self):
         """Declare parameters with defaults and bind them to attributes."""
-
         defaults = {
             'model_path': 'model/unet.pth',
             'input_topic': 'image_raw',
@@ -97,8 +96,8 @@ class UnetSegmentationNode(Node):
             'mask_threshold': 0.5,
             'bilinear': False,
             'simple': True,
-            'classes': 1,            # YAML key is 'classes'
-            'device': 'cpu',         # 'cpu', 'cuda', or CUDA index like '0'
+            'classes': 1,  # YAML key is 'classes'
+            'device': 'cpu',  # 'cpu', 'cuda', or CUDA index like '0'
             'pred_color': [255, 0, 0],
             'overlay_alpha': 0.4,
             'qos_depth': 3,

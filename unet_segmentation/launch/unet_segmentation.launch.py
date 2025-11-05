@@ -1,12 +1,11 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 ALLOWED_DEVICES = ['cpu', '0']
 
@@ -26,12 +25,13 @@ def launch_setup(context, *args, **kwargs):
         get_package_share_directory('unet_segmentation'),
         'config/unet_segmentation.yaml',
     )
-    model_path = PathJoinSubstitution([
-        FindPackageShare('unet_segmentation'),
-        'model',
-        'unet-simple-320-240-l-5-e10-b16(1).pth'
-]   )
-
+    model_path = PathJoinSubstitution(
+        [
+            FindPackageShare('unet_segmentation'),
+            'model',
+            'unet-simple-320-240-l-5-e10-b16(1).pth',
+        ]
+    )
 
     unet_node = Node(
         package='unet_segmentation',
