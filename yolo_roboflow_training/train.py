@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
+
+import torch
 import yaml
 from dotenv import load_dotenv
-import torch
-from ultralytics import YOLO
 from roboflow import Roboflow
+from ultralytics import YOLO
 
 # Load environment variables from .env file
 load_dotenv()
