@@ -1,20 +1,39 @@
 
+
 import rclpy
 from ultralytics import YOLO
+from ultralytics.engine.results import Results
+from typing import List
+import numpy as np
+from sensor_msgs.msg import Image
 
 from .base_node import BaseSegmentationNode
 
 
 class YoloSegmentationNode(BaseSegmentationNode):
     def __init__(self):
-        super().__init__('yolo_segmentation_node') 
+        super().__init__('yolo_segmentation_node')
+        self.declare_parameter('model_path', '')
+        self.declare_parameter('confidence_threshold', 0.5)
+        self.declare_parameter('max_detections', 300)
+        self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
+        self.confidence_threshold = self.get_parameter('confidence_threshold').get_parameter_value().double_value
+        self.max_detections = self.get_parameter('max_detections').get_parameter_value().integer_value
+        self.model = self.load_model()
     
-    def image_callback(self, msg):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        results = self.model(cv_image)
+    def image_callback(self, msg: Image) -> None:
+        cv_image: np.ndarray = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        results: List[Results] = self.model.predict(source=cv_image,
+                                                    imgsz=self.imgsz,
+                                                    conf=self.confidence_threshold,
+                                                    device=self.device,
+                                                    max_det=self.max_detections,
+                                                    compile=True)
         if results:
-            annotated_img = results[0].plot()
-            output_msg = self.bridge.cv2_to_imgmsg(annotated_img, "bgr8")
+            # YOLO always returns a list of Results, one per image. We only pass one image, so use results[0].
+            result: Results = results[0]
+            annotated_img: np.ndarray = result.plot()
+            output_msg: Image = self.bridge.cv2_to_imgmsg(annotated_img, "bgr8")
             output_msg.header = msg.header
             self.publisher.publish(output_msg)
         else:

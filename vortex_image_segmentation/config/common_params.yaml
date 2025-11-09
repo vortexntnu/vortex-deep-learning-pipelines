@@ -2,4 +2,5 @@
   ros__parameters:
     input_topic: "/camera/image_raw"
     output_topic: "/image_masked"
-    device: "cuda"
+    device: "cpu"
+    imgsz: 640

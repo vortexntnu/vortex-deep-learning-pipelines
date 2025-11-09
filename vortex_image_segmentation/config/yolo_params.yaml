@@ -1,4 +1,5 @@
 yolo_segmentation_node:
   ros__parameters:
-    model_path: "/path/to/yolo/model.pt"
-    confidence_threshold: 0.5
+    model_path: "/ros2_ws/yolo_roboflow_training/results/custom_yolov89/weights/last.pt"
+    confidence_threshold: 0.2
+    max_detections: 1
