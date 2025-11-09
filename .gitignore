@@ -171,3 +171,9 @@ data/
 roboflow/roboflow_*
 
 *.zip
+
+scripts/objects/
+
+scripts/object_files/
+
+*.csv

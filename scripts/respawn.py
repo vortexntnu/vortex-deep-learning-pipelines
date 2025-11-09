@@ -40,7 +40,7 @@ class RespawnClient(Node):
 
 def main():
     parser = argparse.ArgumentParser(description='Respawn a robot in Stonefish')
-    parser.add_argument('--name', default='Orca', help='Exact name of the robot (case-sensitive)')
+    parser.add_argument('--name', default='camera_rig', help='Exact name of the robot (case-sensitive)')
     parser.add_argument('--x', type=float, default=0.0)
     parser.add_argument('--y', type=float, default=0.0)
     parser.add_argument('--z', type=float, default=-5.0)
