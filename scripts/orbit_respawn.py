@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import math
 import argparse
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -10,6 +11,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point, Quaternion
 from stonefish_ros2.srv import Respawn
 
+SLEEP_TIME = 2
 
 @dataclass
 class Vec3:
@@ -64,7 +66,7 @@ class OrbitRespawnNode(Node):
 
         self.cli = self.create_client(Respawn, service_name)
         while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info(f"Esperando servicio {service_name} ...")
+            self.get_logger().info(f"Waiting for service {service_name} ...")
 
         self.robot_name = robot_name
         self.radius = radius
@@ -74,7 +76,7 @@ class OrbitRespawnNode(Node):
         seg = P2 - P1
         L = float(np.linalg.norm(seg))
         if L < 1e-6:
-            raise ValueError("Los puntos p1 y p2 son prácticamente iguales; el eje tiene longitud 0.")
+            raise ValueError("Points p1 and p2 are practically the same; the axis has length 0.")
         v_axis = seg / L
         self.P1 = P1
         self.P2 = P2
@@ -143,7 +145,7 @@ class OrbitRespawnNode(Node):
 
     def _tick(self):
         if not hasattr(self, "radius"):
-            self.get_logger().warn("radius no estaba definido; usando 3.0 m por defecto")
+            self.get_logger().warn("radius not defined; using 3.0 m by default")
             self.radius = 3.0
         # Center of the orbit on the axis
         center = self.P1 + self.t * self.seg
@@ -167,10 +169,11 @@ class OrbitRespawnNode(Node):
         req.name = self.robot_name
         req.origin = pose
         self.cli.call_async(req)
-
+        time.sleep(SLEEP_TIME) # Small delay to mask_detection node
         # Advances
         self._advance_arc()
         self._advance_axis()
+        
 
 
 def main():
@@ -205,7 +208,12 @@ def main():
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        try:
+            if rclpy.ok():
+                rclpy.shutdown()
+        except Exception:
+            # Avoid traceback if the signal already closed the ROS context
+            pass
 
 
 if __name__ == "__main__":
