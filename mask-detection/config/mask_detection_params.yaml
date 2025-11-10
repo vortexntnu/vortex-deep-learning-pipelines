@@ -6,3 +6,5 @@
     # camera_rig
     segmentation_image_color_sub_topic: "/front_camera_seg/image_color"
     segmentation_image_id_sub_topic:    "/front_camera_seg/image_raw"
+    front_camera_color_sub_topic:       "/front_camera/image_color"
+    

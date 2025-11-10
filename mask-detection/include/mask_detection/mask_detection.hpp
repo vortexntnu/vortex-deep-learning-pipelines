@@ -41,6 +41,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/sync_policies/approximate_time.h>
 
 #include <rclcpp_components/register_node_macro.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -58,28 +59,26 @@ private:
     // Segmentation camera to obtain mask
     message_filters::Subscriber<sensor_msgs::msg::Image> segmentation_image_color_sub_;
     message_filters::Subscriber<sensor_msgs::msg::Image> segmentation_image_id_sub_;
+    message_filters::Subscriber<sensor_msgs::msg::Image> front_camera_color_sub_;
 
     // Synchronization policy
-    typedef message_filters::sync_policies::ExactTime<
+    using MySyncPolicy = message_filters::sync_policies::ApproximateTime<
         sensor_msgs::msg::Image,                       // Segmentation image color
-        sensor_msgs::msg::Image>                       // Segmentation image id
-        MySyncPolicy;
-
+        sensor_msgs::msg::Image,                       // Segmentation image id
+        sensor_msgs::msg::Image>;                      // Front camera color
     std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
 
     // Publishers
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr seg_image_color_pub_;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr seg_image_id_pub_;
-
-    // Stored messages
-    sensor_msgs::msg::Image::SharedPtr seg_image_;
-    bool seg_image_received_ = false;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr front_camera_color_pub_;
 
     // Frames for segmentation
     int seg_image_counter_ = 0;        
     const int seg_image_limit_ = SEG_IMAGE_LIMIT;
     sensor_msgs::msg::Image::SharedPtr last_seg_image_color_;
     sensor_msgs::msg::Image::SharedPtr last_seg_image_id_;
+    sensor_msgs::msg::Image::SharedPtr last_front_camera_color_;
     std::unordered_map<uint16_t, cv::Vec3b> id_to_bgr_;
     /**
      * @brief Callback function for synchronized the color and id of
@@ -90,7 +89,8 @@ private:
      */
      void synchronized_callback(
         const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_color,
-        const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id);
+        const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id,
+        const sensor_msgs::msg::Image::ConstSharedPtr& front_camera_color);
     
     void try_build_legend_and_save_pair();
     void save_legend_csv(const std::string& path, int64_t sec, uint32_t nsec);

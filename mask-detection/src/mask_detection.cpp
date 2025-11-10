@@ -3,33 +3,39 @@
 // For binding synchronized callback
 using std::placeholders::_1;    // segmentation image color
 using std::placeholders::_2;    // segmentation image id
+using std::placeholders::_3;    // front camera color
 
 MaskDetectionNode::MaskDetectionNode(const rclcpp::NodeOptions& options)
     : Node("mask_detection_node", options) {
     // Topics to subscribe to
     auto segmentation_image_color_sub_topic =
-        this->declare_parameter<std::string>("segmentation_image_color_sub_topic");
+        this->declare_parameter<std::string>("segmentation_image_color_sub_topic", "/segmentation/image_color");
     auto segmentation_image_id_sub_topic =
-        this->declare_parameter<std::string>("segmentation_image_id_sub_topic");
+        this->declare_parameter<std::string>("segmentation_image_id_sub_topic", "/segmentation/image_id");
+    auto front_camera_color_sub_topic =
+        this->declare_parameter<std::string>("front_camera_color_sub_topic", "/front_camera/image_color");
 
     // Quality of Service settings
-    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10))
-                          .reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
-    segmentation_image_color_sub_.subscribe(this, segmentation_image_color_sub_topic,
-                               qos.get_rmw_qos_profile());
-    segmentation_image_id_sub_.subscribe(this, segmentation_image_id_sub_topic,
-                               qos.get_rmw_qos_profile());
+    auto qos = rclcpp::SensorDataQoS();  // Camera data QoS
+    segmentation_image_color_sub_.subscribe(this, segmentation_image_color_sub_topic, qos.get_rmw_qos_profile());
+    segmentation_image_id_sub_.subscribe(this, segmentation_image_id_sub_topic, qos.get_rmw_qos_profile());
+    front_camera_color_sub_.subscribe(this, front_camera_color_sub_topic, qos.get_rmw_qos_profile());
     
     // Synchronization policy
     sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(
-        MySyncPolicy(10), segmentation_image_color_sub_, segmentation_image_id_sub_);
+        MySyncPolicy(20), segmentation_image_color_sub_, segmentation_image_id_sub_, front_camera_color_sub_);
+    sync_->setMaxIntervalDuration(rclcpp::Duration::from_seconds(0.5)); // 1 second
+
     sync_->registerCallback(std::bind(
-        &MaskDetectionNode::synchronized_callback, this, _1, _2));    
+        &MaskDetectionNode::synchronized_callback, this, _1, _2, _3));    
     // Publishers
     seg_image_color_pub_ =
         this->create_publisher<sensor_msgs::msg::Image>("segmentation_image_color", 10);
     seg_image_id_pub_ =
         this->create_publisher<sensor_msgs::msg::Image>("segmentation_image_id", 10);
+    front_camera_color_pub_ = 
+        this->create_publisher<sensor_msgs::msg::Image>("front_camera_image_color_synced", 10);
+
     // ============ Output directory ============
     // 1) Read parameter 'output_dir' (default: $HOME/seg_frames)
     std::string default_out = [](){
@@ -58,36 +64,48 @@ MaskDetectionNode::MaskDetectionNode(const rclcpp::NodeOptions& options)
         }
     }
     RCLCPP_INFO(get_logger(),
-        "Cleaning: files frame_*.tiff, frame_*_stats.csv y frame_*_color.(png|jpg) removidos en %s",
+        "Cleaning: files frame_*.tiff, frame_*_stats.csv and frame_*_color.(png|jpg) removed in %s",
         seg_dir.c_str());
 }
 // ================= Segmentation Image Callbacks ============================
 void MaskDetectionNode::synchronized_callback(
     const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_color,
-    const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id) {
+    const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id,
+    const sensor_msgs::msg::Image::ConstSharedPtr& front_camera_color) {
     // time stamp
     const auto common_stamp = segmentation_image_color->header.stamp;
+    RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), 2000,
+        "SYNC3 fired at %u.%u", segmentation_image_color->header.stamp.sec, segmentation_image_color->header.stamp.nanosec);
     // Fix timestamps
     auto seg_id_fixed    = *segmentation_image_id;
     auto seg_color_fixed = *segmentation_image_color;
+    auto front_color_fixed = *front_camera_color;
+
     if (seg_id_fixed.header.stamp != common_stamp)
         seg_id_fixed.header.stamp = common_stamp;
+    if (front_color_fixed.header.stamp    != common_stamp) 
+        front_color_fixed.header.stamp    = common_stamp;
     // Publish the fixed messages
     seg_image_color_pub_->publish(seg_color_fixed);
     seg_image_id_pub_->publish(seg_id_fixed);
+    front_camera_color_pub_->publish(front_color_fixed);
     // Save the last images
     last_seg_image_color_ = std::make_shared<sensor_msgs::msg::Image>(std::move(seg_color_fixed));
     last_seg_image_id_    = std::make_shared<sensor_msgs::msg::Image>(std::move(seg_id_fixed));
+    last_front_camera_color_ = std::make_shared<sensor_msgs::msg::Image>(std::move(front_color_fixed));
+
     try_build_legend_and_save_pair();
 
 }
 
 void MaskDetectionNode::try_build_legend_and_save_pair() {
-    if (!last_seg_image_color_ || !last_seg_image_id_) {
+    if (!last_seg_image_color_ || !last_seg_image_id_ || !last_front_camera_color_) {
         return;
     }
     auto color = cv_bridge::toCvShare(last_seg_image_color_, "bgr8")->image;
     auto id_map = cv_bridge::toCvShare(last_seg_image_id_)->image;
+    auto front_color = cv_bridge::toCvShare(last_front_camera_color_, "bgr8")->image;
+
     if (color.size() != id_map.size()) {
         RCLCPP_WARN(get_logger(), "Color and ID image sizes do not match.");
         return;
@@ -118,8 +136,8 @@ void MaskDetectionNode::try_build_legend_and_save_pair() {
     }
     // Coordinate for saving
     if (seg_image_counter_ < seg_image_limit_){
-        const auto& header = last_seg_image_id_->header;
-        const int64_t sec  = rclcpp::Time(header.stamp).seconds();
+        const auto& header  = last_seg_image_id_->header;
+        const int64_t sec   = rclcpp::Time(header.stamp).seconds();
         const uint32_t nsec = rclcpp::Time(header.stamp).nanoseconds() % 1000000000ULL;
 
         cv::Mat id_cv = cv_bridge::toCvShare(last_seg_image_id_)->image;
@@ -132,13 +150,25 @@ void MaskDetectionNode::try_build_legend_and_save_pair() {
         cv::imwrite(path_ids, id_cv);
         cv::Mat color_cv = cv_bridge::toCvShare(last_seg_image_color_, "bgr8")->image;
         char fname_color[256];
+        
         snprintf(fname_color, sizeof(fname_color),
                 "frame_%06d_%ld_%09u_color.png",
                 seg_image_counter_, (long)sec, nsec);
         const auto path_color = (out_dir_ / fname_color).string();
         if (!cv::imwrite(path_color, color_cv)) {
-            RCLCPP_WARN(get_logger(), "No se pudo guardar la imagen de color en %s", path_color.c_str());
+            RCLCPP_WARN(get_logger(), "Cannot save color mask to %s", path_color.c_str());
         }
+
+        cv::Mat front_cv = cv_bridge::toCvShare(last_front_camera_color_, "bgr8")->image;
+        char fname_front[256];
+        snprintf(fname_front, sizeof(fname_front),
+                "frame_%06d_%ld_%09u_front.png",
+                seg_image_counter_, (long)sec, nsec);
+        const auto path_front = (out_dir_ / fname_front).string();
+        if (!cv::imwrite(path_front, front_cv)) {
+            RCLCPP_WARN(get_logger(), "Cannot save front image to %s", path_front.c_str());
+        }
+
         const auto legend_path = (out_dir_ / "legend.csv").string();
         save_legend_csv(legend_path, sec, nsec);
         char fname_stats_fmt[256];
