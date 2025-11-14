@@ -9,8 +9,12 @@ from rclpy.parameter import Parameter
 from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 from sensor_msgs.msg import Image
 from ultralytics.engine.results import Results
-from vision_msgs.msg import (BoundingBox2D, Detection2D, Detection2DArray,
-                             ObjectHypothesisWithPose)
+from vision_msgs.msg import (
+    BoundingBox2D,
+    Detection2D,
+    Detection2DArray,
+    ObjectHypothesisWithPose,
+)
 
 from .yolo_seg import YoloSegmentation, YoloSegmentationParams
 
@@ -20,15 +24,16 @@ class YoloSegmentationNode(Node):
     ROS2 node for running YOLO segmentation and publishing results.
     Subscribes to an input image topic, runs segmentation, and publishes output images, masks, and confidences.
     """
+
     def __init__(self):
         """
         Initialize the YoloSegmentationNode, set up publishers, subscribers, and segmentation model.
         """
-        super().__init__('yolo_segmentation_node')
-        self.input_topic = '/gripper_camera/image_raw'
-        self.output_bbox_topic = '/segmentation/bboxes'
-        self.output_mask_topic = '/segmentation/mask'
-        self.debug_topic = '/image_debug'
+        super().__init__("yolo_segmentation_node")
+        self.input_topic = "/gripper_camera/image_raw"
+        self.output_bbox_topic = "/segmentation/bboxes"
+        self.output_mask_topic = "/segmentation/mask"
+        self.debug_topic = "/image_debug"
         self.debug = True
         self.imgsz = 640
 
@@ -36,22 +41,29 @@ class YoloSegmentationNode(Node):
         qos_profile = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             history=QoSHistoryPolicy.KEEP_LAST,
-            depth=1
+            depth=1,
         )
         self.subscription = self.create_subscription(
-            Image,
-            self.input_topic,
-            self.image_callback,
-            qos_profile
+            Image, self.input_topic, self.image_callback, qos_profile
         )
-        self.debug_publisher = self.create_publisher(Image, self.debug_topic, qos_profile)
-        self.bbox_pub = self.create_publisher(Detection2DArray, self.output_bbox_topic, qos_profile)
-        self.mask_pub = self.create_publisher(Image, self.output_mask_topic, qos_profile)
+        self.debug_publisher = self.create_publisher(
+            Image, self.debug_topic, qos_profile
+        )
+        self.bbox_pub = self.create_publisher(
+            Detection2DArray, self.output_bbox_topic, qos_profile
+        )
+        self.mask_pub = self.create_publisher(
+            Image, self.output_mask_topic, qos_profile
+        )
 
         self.params = self.load_params()
-        self.get_logger().info(f"Loading YOLO model from: {self.params.model_path}")
+        self.get_logger().info(
+            f"Loading YOLO model from: {self.params.model_path}"
+        )
         self.segmentation = YoloSegmentation(self.params)
-        self.get_logger().info(f"Node initialized. Subscribing to '{self.input_topic}'")
+        self.get_logger().info(
+            f"Node initialized. Subscribing to '{self.input_topic}'"
+        )
 
     def image_callback(self, msg: Image) -> None:
         """
@@ -102,7 +114,7 @@ class YoloSegmentationNode(Node):
         """
         masks = result.masks.data.cpu().numpy()
         for mask in masks:
-            mask_img = (mask * 255).astype('uint8')
+            mask_img = (mask * 255).astype("uint8")
             mask_msg = self.bridge.cv2_to_imgmsg(mask_img, encoding="mono8")
             mask_msg.header = header
             self.mask_pub.publish(mask_msg)
@@ -122,21 +134,34 @@ class YoloSegmentationNode(Node):
         Returns:
             YoloSegmentationParams: Segmentation parameters dataclass.
         """
-        self.declare_parameter('device', Parameter.Type.STRING)
-        self.declare_parameter('model_path', Parameter.Type.STRING)
-        self.declare_parameter('confidence_threshold', Parameter.Type.DOUBLE)
-        self.declare_parameter('max_detections', Parameter.Type.INTEGER)
-        self.declare_parameter('imgsz', Parameter.Type.INTEGER)
-        self.declare_parameter('compile', Parameter.Type.BOOL)
-        self.declare_parameter('debug', Parameter.Type.BOOL)
+        self.declare_parameter("device", Parameter.Type.STRING)
+        self.declare_parameter("model_path", Parameter.Type.STRING)
+        self.declare_parameter("confidence_threshold", Parameter.Type.DOUBLE)
+        self.declare_parameter("max_detections", Parameter.Type.INTEGER)
+        self.declare_parameter("imgsz", Parameter.Type.INTEGER)
+        self.declare_parameter("compile", Parameter.Type.BOOL)
+        self.declare_parameter("debug", Parameter.Type.BOOL)
         return YoloSegmentationParams(
-            device=self.get_parameter('device').get_parameter_value().string_value,
-            model_path=self.get_parameter('model_path').get_parameter_value().string_value,
-            confidence_threshold=self.get_parameter('confidence_threshold').get_parameter_value().integer_value,
-            max_detections=self.get_parameter('max_detections').get_parameter_value().integer_value,
-            imgsz=self.get_parameter('imgsz').get_parameter_value().integer_value,
-            compile=self.get_parameter('compile').get_parameter_value().bool_value,
+            device=self.get_parameter("device")
+            .get_parameter_value()
+            .string_value,
+            model_path=self.get_parameter("model_path")
+            .get_parameter_value()
+            .string_value,
+            confidence_threshold=self.get_parameter("confidence_threshold")
+            .get_parameter_value()
+            .integer_value,
+            max_detections=self.get_parameter("max_detections")
+            .get_parameter_value()
+            .integer_value,
+            imgsz=self.get_parameter("imgsz")
+            .get_parameter_value()
+            .integer_value,
+            compile=self.get_parameter("compile")
+            .get_parameter_value()
+            .bool_value,
         )
+
 
 def main(args=None):
     """
@@ -152,5 +177,6 @@ def main(args=None):
         node.destroy_node()
         rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

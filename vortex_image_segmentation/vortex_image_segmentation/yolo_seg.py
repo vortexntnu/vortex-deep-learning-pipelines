@@ -2,6 +2,7 @@
 YOLO segmentation model wrapper for inference and visualization using Ultralytics.
 Defines parameter dataclass and main segmentation class.
 """
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -15,6 +16,7 @@ class YoloSegmentationParams:
     """
     Dataclass for storing YOLO segmentation parameters.
     """
+
     model_path: str
     device: str
     confidence_threshold: float
@@ -22,10 +24,12 @@ class YoloSegmentationParams:
     imgsz: int
     compile: bool
 
+
 class YoloSegmentation:
     """
     Wrapper class for YOLO segmentation model inference and visualization.
     """
+
     def __init__(self, params: YoloSegmentationParams):
         """
         Initialize the YOLO segmentation model with given parameters.
@@ -41,7 +45,7 @@ class YoloSegmentation:
         Returns:
             YOLO: Ultralytics YOLO model instance.
         """
-        return YOLO(self.params.model_path, task='segment')
+        return YOLO(self.params.model_path, task="segment")
 
     def predict(self, cv_image: np.ndarray):
         """
