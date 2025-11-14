@@ -1,5 +1,10 @@
 yolo_segmentation_node:
   ros__parameters:
     model_path: "/ros2_ws/yolo_roboflow_training/results/custom_yolov89/weights/last.pt"
+    device: "cpu"
+    imgsz: 640
     confidence_threshold: 0.2
     max_detections: 1
+    compile: True
+    
+    debug: True
