@@ -20,7 +20,8 @@
                 "visualstudioexptteam.vscodeintellicode",
                 "ms-vscode-remote.remote-ssh",
                 "gxl.git-graph-3",
-                "ms-vscode-remote.remote-containers"
+                "ms-vscode-remote.remote-containers",
+                "gruntfuggly.todo-tree"
             ]
         }
     },
