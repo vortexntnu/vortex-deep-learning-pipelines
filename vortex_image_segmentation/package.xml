@@ -3,8 +3,8 @@
 <package format="3">
   <name>vortex_image_segmentation</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="devuser@todo.todo">devuser</maintainer>
+  <description>Package for image segmentation nodes</description>
+  <maintainer email="mjengesv@ntnu.no">Mads Engesvoll</maintainer>
   <license>MIT</license>
 
   <depend>rclpy</depend>
