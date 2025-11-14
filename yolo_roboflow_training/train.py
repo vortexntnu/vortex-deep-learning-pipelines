@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
+
+import torch
 import yaml
 from dotenv import load_dotenv
-import torch
-from ultralytics import YOLO
 from roboflow import Roboflow
+from ultralytics import YOLO
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,21 +16,21 @@ print(f"CUDA version: {torch.version.cuda}")
 print(f"PyTorch cuDNN version: {torch.backends.cudnn.version()}")
 
 # Load config
-with open("config.yaml", "r") as f:
+with open("config.yaml") as f:
     config = yaml.safe_load(f)
 
 # Parameters
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY")
-PROJECT_ID       = config["project_id"]
-VERSION          = config["version"]
-MODEL_TYPE       = config.get("model_type")
-EPOCHS           = config.get("epochs")
-PATIENCE         = config.get("patience")
-IMGSZ            = config.get("imgsz")
-BATCH            = config.get("batch")
-RESULTS_DIR      = config.get("results_dir")
-EXPORT_FORMATS   = config.get("export_formats")
-DATASET_FORMAT   = config.get("dataset_format")
+PROJECT_ID = config["project_id"]
+VERSION = config["version"]
+MODEL_TYPE = config.get("model_type")
+EPOCHS = config.get("epochs")
+PATIENCE = config.get("patience")
+IMGSZ = config.get("imgsz")
+BATCH = config.get("batch")
+RESULTS_DIR = config.get("results_dir")
+EXPORT_FORMATS = config.get("export_formats")
+DATASET_FORMAT = config.get("dataset_format")
 
 if not ROBOFLOW_API_KEY:
     raise ValueError("ROBOFLOW_API_KEY not set in environment or .env file.")
@@ -38,10 +39,10 @@ if not ROBOFLOW_API_KEY:
 # Download dataset from Roboflow into 'roboflow_data/'
 roboflow_data_dir = Path(__file__).parent / "roboflow_data"
 roboflow_data_dir.mkdir(exist_ok=True)
-rf       = Roboflow(api_key=ROBOFLOW_API_KEY)
-project  = rf.workspace().project(PROJECT_ID)
+rf = Roboflow(api_key=ROBOFLOW_API_KEY)
+project = rf.workspace().project(PROJECT_ID)
 versions = project.versions()
-dataset  = project.version(VERSION).download(
+dataset = project.version(VERSION).download(
     DATASET_FORMAT, location=str(roboflow_data_dir)
 )
 
