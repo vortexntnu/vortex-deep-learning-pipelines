@@ -23,7 +23,6 @@ echo ""
 # Run Docker Container
 # ------------------------------------------------------------------------------
 docker run -it --rm \
-    --user "$(id -u):$(id -g)" \
     --privileged \
     --network host \
     --ipc=host \
