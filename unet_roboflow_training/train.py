@@ -13,7 +13,7 @@ from PIL import Image
 from roboflow import Roboflow
 
 ##############################################
-# 1. Define the U-Net model (with a simple UNet)
+# 1. Define the U-Net model
 ##############################################
 class DoubleConv(nn.Module):
     """
@@ -34,10 +34,7 @@ class DoubleConv(nn.Module):
         return self.double_conv(x)
 
 class UNet(nn.Module):
-    def __init__(self, in_channels=3, out_channels=1):
-        """
-        For binary segmentation the model outputs 1 channel per pixel.
-        """
+    def __init__(self, in_channels=3, out_channels=2):  # Adjusted for 2 output classes
         super(UNet, self).__init__()
         # Down-sampling path
         self.down1 = DoubleConv(in_channels, 64)
@@ -62,7 +59,7 @@ class UNet(nn.Module):
         self.up1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
         self.conv1 = DoubleConv(128, 64)
 
-        self.final_conv = nn.Conv2d(64, out_channels, kernel_size=1)
+        self.final_conv = nn.Conv2d(64, out_channels, kernel_size=1)  # Adjusted for 2 classes
 
     def forward(self, x):
         # Down path
@@ -91,25 +88,17 @@ class UNet(nn.Module):
         u1 = self.up1(c7)
         merge1 = torch.cat([u1, c1], dim=1)
         c8 = self.conv1(merge1)
-        output = self.final_conv(c8)
-        return output
+        logits = self.final_conv(c8)  # Raw logits
+        return logits
 
 ##############################################
 # 2. Create a custom Dataset class for segmentation
-#    (Assuming images are .jpg and masks are .png with names like:
-#     "frame_0444.jpg" and "frame_0444_mask.png")
 ##############################################
 class SingleFolderSegmentationDataset(Dataset):
     def __init__(self, data_dir, transform=None, mask_transform=None):
-        """
-        data_dir: directory containing both images and their masks.
-        transform: torchvision transforms for the image.
-        mask_transform: transforms for the mask.
-        """
         self.data_dir = data_dir
-        # List only image files (assuming images are .jpg and masks are not included)
         self.image_files = sorted([f for f in os.listdir(data_dir)
-                                    if f.endswith('.jpg') and '_mask' not in f])
+                                   if f.endswith('.jpg') and '_mask' not in f])
         self.transform = transform
         self.mask_transform = mask_transform
 
@@ -119,30 +108,23 @@ class SingleFolderSegmentationDataset(Dataset):
     def __getitem__(self, idx):
         image_file = self.image_files[idx]
         image_path = os.path.join(self.data_dir, image_file)
-        
-        # Derive the mask filename using a fixed .png extension
-        base, _ = os.path.splitext(image_file)
-        mask_file = base + "_mask.png"
-        mask_path = os.path.join(self.data_dir, mask_file)
+        mask_path = os.path.join(self.data_dir, image_file.replace('.jpg', '_mask.png'))
 
         if not os.path.exists(mask_path):
             raise FileNotFoundError(f"Mask file {mask_path} does not exist for image {image_file}")
 
         image = Image.open(image_path).convert("RGB")
-        mask = Image.open(mask_path).convert("L")  # load mask as grayscale
+        mask = Image.open(mask_path).convert("L")  # Load mask as grayscale
 
         if self.transform:
             image = self.transform(image)
-        else:
-            image = transforms.ToTensor()(image)
-
         if self.mask_transform:
             mask = self.mask_transform(mask)
-        else:
-            mask = transforms.ToTensor()(mask)
 
-        # Binarize the mask (assumes mask pixel values are 0 and 255)
-        mask = (mask > 0.5).float()
+        # Normalize mask to binary format and convert to long
+        mask = (mask > 0.5).long()  # Convert to integer class indices
+        mask = mask.squeeze(0)  # Remove the singleton dimension (C=1)
+
         return image, mask
 
 ##############################################
@@ -154,29 +136,17 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
 
     for epoch in range(num_epochs):
         print(f"Epoch {epoch+1}/{num_epochs}")
-        print("-" * 20)
-
-        # Each epoch has a training and validation phase
         for phase in ['train', 'valid']:
-            if phase == 'train':
-                model.train()  # Set model to training mode
-            else:
-                model.eval()   # Set model to evaluate mode
-
+            model.train() if phase == 'train' else model.eval()
             running_loss = 0.0
 
-            # Iterate over data.
             for inputs, masks in dataloaders[phase]:
-                inputs = inputs.to(device)
-                masks = masks.to(device)
-
+                inputs, masks = inputs.to(device), masks.to(device)
                 optimizer.zero_grad()
 
-                # Forward pass
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
                     loss = criterion(outputs, masks)
-                    # Backward pass and optimize only if in training phase
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
@@ -186,81 +156,64 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             print(f"{phase} Loss: {epoch_loss:.4f}")
 
-            # Deep copy the model if the validation loss improved
             if phase == 'valid' and epoch_loss < best_loss:
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
 
-        print()
-
-    print("Best validation Loss: {:.4f}".format(best_loss))
     model.load_state_dict(best_model_wts)
     return model
 
 ##############################################
-# 4. Main function: download dataset, create dataloaders, and train
+# 4. Main function
 ##############################################
 def main():
-    # ===== Retrieve dataset from Roboflow =====
-    # Replace with your actual Roboflow API key, workspace, project, and version.
-    rf = Roboflow(api_key="") # Add your Roboflow API key here
-    project = rf.workspace("pipe-92at4").project("pipeline-detection-2")
-    version = project.version(5)
+    rf = Roboflow(api_key="Bc3tBeLXd35djgb8djKN")
+    project = rf.workspace("pipe-92at4").project("pipeline-segmentation-nearby")
+    version = project.version(2)
     dataset = version.download("png-mask-semantic")
 
-    # With the current dataset, the folder structure is expected as follows:
-    # dataset.location/Pipeline-Detection-2-5/train/  --> contains images (.jpg) and masks (.png)
-    # dataset.location/Pipeline-Detection-2-5/valid/  --> contains images (.jpg) and masks (.png)
-    #
-    # Update the directory paths accordingly:
     train_dir = os.path.join(dataset.location, "train")
     valid_dir = os.path.join(dataset.location, "valid")
 
-    # ===== Define transforms =====
-    # Resize images and masks to a fixed size (adjust as needed)
     transform = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.ToTensor()
+        transforms.Resize((544, 960)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])  # Match NVIDIA pipeline
     ])
     mask_transform = transforms.Compose([
-        transforms.Resize((256, 256)),
+        transforms.Resize((544, 960)),
         transforms.ToTensor()
     ])
 
-    # ===== Create datasets =====
-    train_dataset = SingleFolderSegmentationDataset(train_dir,
-                                                     transform=transform,
-                                                     mask_transform=mask_transform)
-    valid_dataset = SingleFolderSegmentationDataset(valid_dir,
-                                                     transform=transform,
-                                                     mask_transform=mask_transform)
+    train_dataset = SingleFolderSegmentationDataset(train_dir, transform, mask_transform)
+    valid_dataset = SingleFolderSegmentationDataset(valid_dir, transform, mask_transform)
 
-    # ===== Create dataloaders =====
-    batch_size = 4  # adjust batch size as needed
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=4)
+    valid_loader = DataLoader(valid_dataset, batch_size=4, shuffle=False, num_workers=4)
     dataloaders = {'train': train_loader, 'valid': valid_loader}
 
-    # ===== Set device =====
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("Using device:", device)
+    model = UNet(in_channels=3, out_channels=2).to(device)
 
-    # ===== Initialize the model =====
-    model = UNet(in_channels=3, out_channels=1)
-    model = model.to(device)
-
-    # ===== Define loss function and optimizer =====
-    # For binary segmentation, BCEWithLogitsLoss is common.
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-    # ===== Train the model =====
-    num_epochs = 25  # adjust the number of epochs as needed
-    trained_model = train_model(model, dataloaders, criterion, optimizer, device, num_epochs=num_epochs)
+    trained_model = train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
 
-    # ===== Save the trained model =====
     torch.save(trained_model.state_dict(), "unet_segmentation.pth")
-    print("Model saved as unet_segmentation.pth")
+
+    trained_model.eval()
+    dummy_input = torch.randn(1, 3, 544, 960, device=device)
+    torch.onnx.export(
+        trained_model,
+        dummy_input,
+        "unet_segmentation.onnx",
+        input_names=["input_1"],
+        output_names=["argmax_1"],
+        dynamic_axes={"input_1": {0: "batch_size"}, "argmax_1": {0: "batch_size"}},
+        opset_version=11
+    )
+    print("Model exported to unet_segmentation.onnx")
 
 if __name__ == "__main__":
     main()

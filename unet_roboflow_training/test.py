@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import torch
 import torch.nn as nn
 from torchvision import transforms
@@ -96,7 +95,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize the model and load the saved weights
 model = UNet(in_channels=3, out_channels=1)
-model_path = "unet_segmentation.pth"  # path to your saved model weights
+model_path = "unet10.pth"  # path to your saved model weights
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device)
 model.eval()  # set model to evaluation mode
@@ -106,12 +105,12 @@ model.eval()  # set model to evaluation mode
 ##############################################
 # Define the transformation (should match the training transform)
 transform = transforms.Compose([
-    transforms.Resize((256, 256)),
+    transforms.Resize((544, 960)),
     transforms.ToTensor(),
 ])
 
 # Path to the test image (update this path to your test image)
-test_image_path = "test.jpg"
+test_image_path = "frame_7099.jpg"
 image = Image.open(test_image_path).convert("RGB")
 input_tensor = transform(image).unsqueeze(0)  # add batch dimension
 input_tensor = input_tensor.to(device)
@@ -124,7 +123,7 @@ with torch.no_grad():
 
 # Apply sigmoid to convert logits to probabilities and then threshold for binary mask
 output_prob = torch.sigmoid(output)
-threshold = 0.2
+threshold = 0.003
 predicted_mask = (output_prob > threshold).float()
 
 # Remove batch and channel dimensions, and convert to NumPy array for visualization
@@ -157,3 +156,5 @@ plt.axis("off")
 plt.savefig("test_output.png")
 print("Output saved to test_output.png")
 
+if __name__ == "__main__":
+    main()
