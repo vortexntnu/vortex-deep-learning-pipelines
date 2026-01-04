@@ -18,11 +18,7 @@ ROBOFLOW_PROJECT_VERSION = "1"
 # TODO: Test different YOLOv8 model sizes.
 MODEL_NAME = "yolov8m"
 
-EPOCHS = 200
-IMGSZ = 640
-BATCH = 16
-DEVICE = 0 # GPU device index
-WORKERS = 8
+DEVICE = 0
 
 RESULTS_DIR = Path("results") / "yolov8"
 EXPORT_FORMATS = ["onnx"]
@@ -53,11 +49,11 @@ def main() -> None:
 
     model.train(
         data=str(data_yaml_path),
-        epochs=EPOCHS,
-        imgsz=IMGSZ,
-        batch=BATCH,
+        epochs=200,
+        imgsz=640,
+        batch=16,
         device=DEVICE,
-        workers=WORKERS,
+        workers=8,
         project=str(RESULTS_DIR),
         name=experiment_name,
     )
