@@ -170,3 +170,6 @@ data/
 
 .vscode/
 log/
+
+# Ignore all experiment result folders
+object_detection_training/*/

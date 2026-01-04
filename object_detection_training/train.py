@@ -21,32 +21,35 @@ except KeyError as e:
     raise RuntimeError(
         "ROBOFLOW_API_KEY must be set as an environment variable"
     ) from e
-WORKSPACE_NAME = "hei-qp1ee"
-PROJECT_NAME = "simulatorvalve-4rcbu"
-VERSION = "1" 
+ROBOFLOW_WORKSPACE_NAME = "hei-qp1ee"
+ROBOFLOW_PROJECT_NAME = "simulatorvalve-4rcbu"
+ROBOFLOW_PROJECT_VERSION = "1" 
 
 rf = Roboflow(api_key=ROBOFLOW_API_KEY)
-project = rf.workspace(WORKSPACE_NAME).project(PROJECT_NAME)
+project = rf.workspace(ROBOFLOW_WORKSPACE_NAME).project(ROBOFLOW_PROJECT_NAME)
 versions = project.versions()
-dataset = project.version(VERSION).download("yolov8")
+dataset = project.version(ROBOFLOW_PROJECT_VERSION).download("yolov8")
 
 # Use a pretrained YOLOv8m model to avoid training from scratch.
 # TODO: Test different YOLOv8 model sizes.
+MODEL_NAME = "yolov8m"
 model = YOLO(
-    "yolov8m.pt"
+    f"{MODEL_NAME}.pt"
 )
 
 data_yaml_path = os.path.join(dataset.location, "data.yaml")
-results_dir = "results"
+results_dir = "results/yolov8"
+experiment_name = f"{ROBOFLOW_PROJECT_NAME}_v{ROBOFLOW_PROJECT_VERSION}_{MODEL_NAME}"
 
 model.train(
     data=data_yaml_path,
-    epochs=200,
+    epochs=5,
     imgsz=640,
     batch=16,
     device=0,
+    workers=8,
     project=results_dir,
-    name="custom_yolov8",
+    name=experiment_name,
 )
 
 metrics = model.val(data=data_yaml_path)
