@@ -18,10 +18,8 @@ ROBOFLOW_PROJECT_VERSION = "1"
 # TODO: Test different YOLOv8 model sizes.
 MODEL_NAME = "yolov8m"
 
+# Specify the GPU device index to use for training.
 DEVICE = 0
-
-RESULTS_DIR = Path("results") / "yolov8"
-EXPORT_FORMATS = ["onnx"]
 
 def main() -> None:
     if not torch.cuda.is_available():
@@ -31,7 +29,7 @@ def main() -> None:
     print("cuDNN version:", torch.backends.cudnn.version())
     print("Using GPU:", torch.cuda.get_device_name(0))
 
-    # The API key is loaded from the environment to avoid hard-coding secrets.
+    # The Roboflow API key is loaded from the environment to avoid hard-coding secrets.
     try:
         roboflow_api_key = os.environ["ROBOFLOW_API_KEY"]
     except KeyError as e:
@@ -54,7 +52,7 @@ def main() -> None:
         batch=16,
         device=DEVICE,
         workers=8,
-        project=str(RESULTS_DIR),
+        project = Path("results") / "yolov8",
         name=experiment_name,
     )
 
@@ -62,7 +60,7 @@ def main() -> None:
     print("Validation metrics:", metrics)
     
     # Export formats for deployment
-    for fmt in EXPORT_FORMATS:
+    for fmt in ["onnx"]:
         model.export(format=fmt, device=DEVICE)
 
 
