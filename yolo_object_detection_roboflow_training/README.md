@@ -12,7 +12,7 @@ You can verify it is set with:
 ```bash
 echo $ROBOFLOW_API_KEY
 ```
-| **Do not commit your API key to Git.**
+**Do not commit your API key to Git.**
 
 ## Running the SLURM job
 1. SSH into the cluster (IDUN)
