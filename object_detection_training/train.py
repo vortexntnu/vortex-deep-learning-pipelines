@@ -18,12 +18,10 @@ print("Using GPU:", torch.cuda.get_device_name(0))
 try:
     ROBOFLOW_API_KEY = os.environ["ROBOFLOW_API_KEY"]
 except KeyError as e:
-    raise RuntimeError(
-        "ROBOFLOW_API_KEY must be set as an environment variable"
-    ) from e
+    raise RuntimeError("ROBOFLOW_API_KEY must be set as an environment variable") from e
 ROBOFLOW_WORKSPACE_NAME = "hei-qp1ee"
 ROBOFLOW_PROJECT_NAME = "simulatorvalve-4rcbu"
-ROBOFLOW_PROJECT_VERSION = "1" 
+ROBOFLOW_PROJECT_VERSION = "1"
 
 rf = Roboflow(api_key=ROBOFLOW_API_KEY)
 project = rf.workspace(ROBOFLOW_WORKSPACE_NAME).project(ROBOFLOW_PROJECT_NAME)
@@ -33,9 +31,7 @@ dataset = project.version(ROBOFLOW_PROJECT_VERSION).download("yolov8")
 # Use a pretrained YOLOv8m model to avoid training from scratch.
 # TODO: Test different YOLOv8 model sizes.
 MODEL_NAME = "yolov8m"
-model = YOLO(
-    f"{MODEL_NAME}.pt"
-)
+model = YOLO(f"{MODEL_NAME}.pt")
 
 data_yaml_path = os.path.join(dataset.location, "data.yaml")
 results_dir = "results/yolov8"
@@ -56,6 +52,6 @@ metrics = model.val(data=data_yaml_path)
 print("Validation metrics:", metrics)
 
 # Export formats for deployment
-export_formats = ["onnx"]  
+export_formats = ["onnx"]
 for fmt in export_formats:
     model.export(format=fmt, device=0)

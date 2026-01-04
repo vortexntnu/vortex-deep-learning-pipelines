@@ -24,15 +24,15 @@ sbatch --export=ALL,ROBOFLOW_API_KEY=$ROBOFLOW_API_KEY Job.slurm
 After submission, Slurm will print a job ID.
 
 ## Monitoring the job
-- Check job status: 
+- Check job status:
 ```bash
 squeue -j <JOB_ID>
 ```
-- To list all your jobs: 
+- To list all your jobs:
 ```bash
 squeue -u $USER
 ```
-- Follow the job output: 
+- Follow the job output:
 ```bash
 tail -f $(ls -t vortex-obj-detect-train_*.out | head -n 1)
 ```
