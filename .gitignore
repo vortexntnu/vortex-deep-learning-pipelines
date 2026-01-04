@@ -173,3 +173,4 @@ log/
 
 # Ignore all experiment result folders
 object_detection_training/*/
+unet_roboflow_training/*/

@@ -1,0 +1,43 @@
+# UNet training
+Scripts for training an segmentation model using UNet on Roboflow datasets.
+
+## Environment variables
+Training requires a Roboflow API key.
+Set it **once per shell session** before submitting the Slurm job:
+```bash
+export ROBOFLOW_API_KEY=<your_roboflow_api_key>
+```
+
+You can verify it is set with:
+```bash
+echo $ROBOFLOW_API_KEY
+```
+| **Do not commit your API key to Git.**
+
+## Running the SLURM job
+1. SSH into the cluster (IDUN)
+2. Navigate to the project directory
+3. Submit the job:
+```bash
+sbatch --export=ALL,ROBOFLOW_API_KEY=$ROBOFLOW_API_KEY Job.slurm
+```
+After submission, Slurm will print a job ID.
+
+## Monitoring the job
+- Check job status:
+```bash
+squeue -j <JOB_ID>
+```
+- To list all your jobs:
+```bash
+squeue -u $USER
+```
+- Follow the job output:
+```bash
+tail -f $(ls -t vortex-obj-detect-train_*.out | head -n 1)
+```
+
+## Canceling a job
+```bash
+scancel <JOB_ID>
+```
