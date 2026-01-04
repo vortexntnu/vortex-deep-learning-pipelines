@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
-import os
 import copy
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
 from PIL import Image
 
 # Import Roboflow and download your dataset.
 # Make sure you have installed it via: pip install roboflow
 from roboflow import Roboflow
+from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
+
 
 ##############################################
 # 1. Define the U-Net model (with a simple UNet)
 ##############################################
 class DoubleConv(nn.Module):
-    """
-    A block with two consecutive convolution layers each followed by
+    """A block with two consecutive convolution layers each followed by
     batch normalization and ReLU activation.
     """
+
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         self.double_conv = nn.Sequential(
@@ -28,15 +30,16 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
+
     def forward(self, x):
         return self.double_conv(x)
 
+
 class UNet(nn.Module):
     def __init__(self, in_channels=3, out_channels=1):
-        """
-        For binary segmentation the model outputs 1 channel per pixel.
+        """For binary segmentation the model outputs 1 channel per pixel.
         """
         super(UNet, self).__init__()
         # Down-sampling path
@@ -94,6 +97,7 @@ class UNet(nn.Module):
         output = self.final_conv(c8)
         return output
 
+
 ##############################################
 # 2. Create a custom Dataset class for segmentation
 #    (Assuming images are .jpg and masks are .png with names like:
@@ -101,15 +105,15 @@ class UNet(nn.Module):
 ##############################################
 class SingleFolderSegmentationDataset(Dataset):
     def __init__(self, data_dir, transform=None, mask_transform=None):
-        """
-        data_dir: directory containing both images and their masks.
+        """data_dir: directory containing both images and their masks.
         transform: torchvision transforms for the image.
         mask_transform: transforms for the mask.
         """
         self.data_dir = data_dir
         # List only image files (assuming images are .jpg and masks are not included)
-        self.image_files = sorted([f for f in os.listdir(data_dir)
-                                    if f.endswith('.jpg') and '_mask' not in f])
+        self.image_files = sorted(
+            [f for f in os.listdir(data_dir) if f.endswith('.jpg') and '_mask' not in f]
+        )
         self.transform = transform
         self.mask_transform = mask_transform
 
@@ -119,14 +123,16 @@ class SingleFolderSegmentationDataset(Dataset):
     def __getitem__(self, idx):
         image_file = self.image_files[idx]
         image_path = os.path.join(self.data_dir, image_file)
-        
+
         # Derive the mask filename using a fixed .png extension
         base, _ = os.path.splitext(image_file)
         mask_file = base + "_mask.png"
         mask_path = os.path.join(self.data_dir, mask_file)
 
         if not os.path.exists(mask_path):
-            raise FileNotFoundError(f"Mask file {mask_path} does not exist for image {image_file}")
+            raise FileNotFoundError(
+                f"Mask file {mask_path} does not exist for image {image_file}"
+            )
 
         image = Image.open(image_path).convert("RGB")
         mask = Image.open(mask_path).convert("L")  # load mask as grayscale
@@ -145,6 +151,7 @@ class SingleFolderSegmentationDataset(Dataset):
         mask = (mask > 0.5).float()
         return image, mask
 
+
 ##############################################
 # 3. Define the training loop
 ##############################################
@@ -153,7 +160,7 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
     best_loss = float('inf')
 
     for epoch in range(num_epochs):
-        print(f"Epoch {epoch+1}/{num_epochs}")
+        print(f"Epoch {epoch + 1}/{num_epochs}")
         print("-" * 20)
 
         # Each epoch has a training and validation phase
@@ -161,7 +168,7 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
             if phase == 'train':
                 model.train()  # Set model to training mode
             else:
-                model.eval()   # Set model to evaluate mode
+                model.eval()  # Set model to evaluate mode
 
             running_loss = 0.0
 
@@ -193,9 +200,10 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
 
         print()
 
-    print("Best validation Loss: {:.4f}".format(best_loss))
+    print(f"Best validation Loss: {best_loss:.4f}")
     model.load_state_dict(best_model_wts)
     return model
+
 
 ##############################################
 # 4. Main function: download dataset, create dataloaders, and train
@@ -203,7 +211,7 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=25)
 def main():
     # ===== Retrieve dataset from Roboflow =====
     # Replace with your actual Roboflow API key, workspace, project, and version.
-    rf = Roboflow(api_key="") # Add your Roboflow API key here
+    rf = Roboflow(api_key="")  # Add your Roboflow API key here
     project = rf.workspace("pipe-92at4").project("pipeline-detection-2")
     version = project.version(5)
     dataset = version.download("png-mask-semantic")
@@ -218,27 +226,29 @@ def main():
 
     # ===== Define transforms =====
     # Resize images and masks to a fixed size (adjust as needed)
-    transform = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.ToTensor()
-    ])
-    mask_transform = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.ToTensor()
-    ])
+    transform = transforms.Compose(
+        [transforms.Resize((256, 256)), transforms.ToTensor()]
+    )
+    mask_transform = transforms.Compose(
+        [transforms.Resize((256, 256)), transforms.ToTensor()]
+    )
 
     # ===== Create datasets =====
-    train_dataset = SingleFolderSegmentationDataset(train_dir,
-                                                     transform=transform,
-                                                     mask_transform=mask_transform)
-    valid_dataset = SingleFolderSegmentationDataset(valid_dir,
-                                                     transform=transform,
-                                                     mask_transform=mask_transform)
+    train_dataset = SingleFolderSegmentationDataset(
+        train_dir, transform=transform, mask_transform=mask_transform
+    )
+    valid_dataset = SingleFolderSegmentationDataset(
+        valid_dir, transform=transform, mask_transform=mask_transform
+    )
 
     # ===== Create dataloaders =====
     batch_size = 4  # adjust batch size as needed
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=4
+    )
+    valid_loader = DataLoader(
+        valid_dataset, batch_size=batch_size, shuffle=False, num_workers=4
+    )
     dataloaders = {'train': train_loader, 'valid': valid_loader}
 
     # ===== Set device =====
@@ -256,11 +266,14 @@ def main():
 
     # ===== Train the model =====
     num_epochs = 25  # adjust the number of epochs as needed
-    trained_model = train_model(model, dataloaders, criterion, optimizer, device, num_epochs=num_epochs)
+    trained_model = train_model(
+        model, dataloaders, criterion, optimizer, device, num_epochs=num_epochs
+    )
 
     # ===== Save the trained model =====
     torch.save(trained_model.state_dict(), "unet_segmentation.pth")
     print("Model saved as unet_segmentation.pth")
+
 
 if __name__ == "__main__":
     main()

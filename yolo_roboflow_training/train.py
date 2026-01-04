@@ -1,4 +1,5 @@
 import os
+
 # !which python
 # !pip show ultralytics
 # !pip show urllib3
@@ -6,13 +7,14 @@ import os
 # !pip show requests-toolbelt
 # Check GPU availability
 import torch
+
 print("CUDA available:", torch.cuda.is_available())
 print("CUDA version:", torch.version.cuda)
 print("PyTorch built with CUDA:", torch.backends.cudnn.version())
 
 
-from ultralytics import YOLO
 from roboflow import Roboflow
+from ultralytics import YOLO
 
 # Step 1: Download Dataset from Roboflow
 ROBOFLOW_API_KEY = ""  # Replace with your Roboflow API Key
@@ -27,17 +29,22 @@ versions = project.versions()
 dataset = project.version(VERSION).download("yolov8")
 
 
-
 # Step 2: Set up training configuration
-model = YOLO("yolov8m.pt")  # Use the smallest YOLOv8 model to start. Change to 'yolov8s.pt', etc., for larger models.
+model = YOLO(
+    "yolov8m.pt"
+)  # Use the smallest YOLOv8 model to start. Change to 'yolov8s.pt', etc., for larger models.
 
 # Define paths
-data_yaml_path = os.path.join(dataset.location, "data.yaml")  # Path to the dataset's data.yaml file
+data_yaml_path = os.path.join(
+    dataset.location, "data.yaml"
+)  # Path to the dataset's data.yaml file
 results_dir = "results"  # Directory to save training results
 
 
 if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is not available. Ensure your environment supports GPU acceleration.")
+    raise RuntimeError(
+        "CUDA is not available. Ensure your environment supports GPU acceleration."
+    )
 
 print("Using GPU:", torch.cuda.get_device_name(0))
 
@@ -49,7 +56,7 @@ model.train(
     batch=16,  # Batch size
     device=0,  # Use the first GPU (0). For multiple GPUs, use device="0,1,2"
     project=results_dir,  # Directory for saving results
-    name="custom_yolov8"  # Subdirectory for this training run
+    name="custom_yolov8",  # Subdirectory for this training run
 )
 
 # Step 4: Evaluate the model

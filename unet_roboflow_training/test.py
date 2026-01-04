@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-import torch
-import torch.nn as nn
-from torchvision import transforms
-from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
+import torch.nn as nn
+from PIL import Image
+from torchvision import transforms
+
 
 ##############################################
 # 1. Define the U-Net model (same as during training)
 ##############################################
 class DoubleConv(nn.Module):
-    """
-    A block with two consecutive convolution layers each followed by
+    """A block with two consecutive convolution layers each followed by
     batch normalization and ReLU activation.
     """
+
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         self.double_conv = nn.Sequential(
@@ -22,15 +23,16 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
+
     def forward(self, x):
         return self.double_conv(x)
 
+
 class UNet(nn.Module):
     def __init__(self, in_channels=3, out_channels=1):
-        """
-        For binary segmentation the model outputs 1 channel per pixel.
+        """For binary segmentation the model outputs 1 channel per pixel.
         """
         super(UNet, self).__init__()
         # Down-sampling path
@@ -88,6 +90,7 @@ class UNet(nn.Module):
         output = self.final_conv(c8)
         return output
 
+
 ##############################################
 # 2. Load the saved model
 ##############################################
@@ -105,10 +108,12 @@ model.eval()  # set model to evaluation mode
 # 3. Prepare the test image
 ##############################################
 # Define the transformation (should match the training transform)
-transform = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-])
+transform = transforms.Compose(
+    [
+        transforms.Resize((256, 256)),
+        transforms.ToTensor(),
+    ]
+)
 
 # Path to the test image (update this path to your test image)
 test_image_path = "test.jpg"
@@ -156,4 +161,3 @@ plt.axis("off")
 
 plt.savefig("test_output.png")
 print("Output saved to test_output.png")
-
