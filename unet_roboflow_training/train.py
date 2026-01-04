@@ -39,8 +39,7 @@ class DoubleConv(nn.Module):
 
 class UNet(nn.Module):
     def __init__(self, in_channels=3, out_channels=1):
-        """For binary segmentation the model outputs 1 channel per pixel.
-        """
+        """For binary segmentation the model outputs 1 channel per pixel."""
         super(UNet, self).__init__()
         # Down-sampling path
         self.down1 = DoubleConv(in_channels, 64)
