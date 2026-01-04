@@ -15,7 +15,7 @@ set -euo pipefail
 
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK}"
 
-# Helps fragmentation for some training runs
+# Helps reduce fragmentation for some training runs
 export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
 module purge
