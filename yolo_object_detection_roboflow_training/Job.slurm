@@ -23,7 +23,10 @@ module --ignore_cache load foss/2022a
 module --ignore_cache load Python/3.10.4-GCCcore-11.3.0
 
 VENV_BASE="${SLURM_TMPDIR:-/tmp}"
-VENV_DIR="$(mktemp -d -p "$VENV_BASE" venv-objdetect-XXXXXXXX)"
+if ! VENV_DIR="$(mktemp -d -p "$VENV_BASE" venv-objdetect-XXXXXXXX)"; then
+    echo "Error: Failed to create temporary virtualenv directory under '$VENV_BASE'." >&2
+    exit 1
+fi
 
 python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
