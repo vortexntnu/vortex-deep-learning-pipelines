@@ -59,12 +59,24 @@ def main() -> None:
         name=experiment_name,
     )
 
-    metrics = model.val(data=str(data_yaml_path))
+    # Load the best checkpoint produced during training.
+    best_weights_path = (
+        Path("results") / "yolov8" / experiment_name / "weights" / "best.pt"
+    )
+    if not best_weights_path.exists():
+        raise FileNotFoundError(
+            f"Trained model checkpoint not found at {best_weights_path}. "
+            "Ensure training completed successfully before validation and export."
+        )
+
+    trained_model = YOLO(str(best_weights_path))
+
+    metrics = trained_model.val(data=str(data_yaml_path))
     print("Validation metrics:", metrics)
 
     # Export formats for deployment
     for fmt in ["onnx"]:
-        model.export(format=fmt, device=DEVICE)
+        trained_model.export(format=fmt, device=DEVICE)
 
 
 if __name__ == "__main__":
