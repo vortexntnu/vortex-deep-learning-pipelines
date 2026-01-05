@@ -20,8 +20,6 @@ module --ignore_cache load Python/3.10.4-GCCcore-11.3.0
 
 pip cache purge
 
-# makes sure that the pip is up to date
-python3 -m pip install --upgrade pip
 
 # Create a temporary virtual environment
 VENV_DIR=$(mktemp -d -t env-repaint-XXXXXXXXXX)
