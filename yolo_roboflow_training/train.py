@@ -41,7 +41,6 @@ roboflow_data_dir = Path(__file__).parent / "roboflow_data"
 roboflow_data_dir.mkdir(exist_ok=True)
 rf = Roboflow(api_key=ROBOFLOW_API_KEY)
 project = rf.workspace().project(PROJECT_ID)
-versions = project.versions()
 dataset = project.version(VERSION).download(
     DATASET_FORMAT, location=str(roboflow_data_dir)
 )
