@@ -4,7 +4,7 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 # Image Configuration
 # ------------------------------------------------------------------------------
-IMAGE="vortex-image-segmentation:latest"  # Default Docker image name/tag
+IMAGE="vortex-deep-learning-pipelines:latest"  # Default Docker image name/tag
 
 # ------------------------------------------------------------------------------
 # Locate Script Directory and Workspace Root
