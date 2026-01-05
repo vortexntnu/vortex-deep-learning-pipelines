@@ -3,6 +3,7 @@ from pathlib import Path
 
 import torch
 import yaml
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from roboflow import Roboflow
 from ultralytics import YOLO
@@ -65,6 +66,13 @@ else:
 WORKERS = os.cpu_count() // 2 if os.cpu_count() else 2
 print(f"Using {WORKERS} workers")
 
+model_base = Path(MODEL_TYPE).stem
+dataset_base = getattr(dataset, "name").strip().lower()
+timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+run_name = f"{model_base}-{dataset_base}-v{VERSION}-{timestamp}".replace(" ", "-")
+
+print(f"Training run name: {run_name}")
+
 model.train(
     data=str(data_yaml_path),
     epochs=EPOCHS,
@@ -73,7 +81,7 @@ model.train(
     batch=BATCH,
     device=device,
     project=str(RESULTS_DIR),
-    name="custom_yolov8",
+    name=run_name,
     workers=WORKERS,
     # compile=True
 )
