@@ -43,6 +43,7 @@ echo ""
 # ------------------------------------------------------------------------------
 docker buildx build \
     --platform "$PLATFORM" \
+    --network=host \
     --build-arg BASE_IMAGE="$BASE_IMAGE" \
     --build-arg USER_ID="$(id -u)" \
     --build-arg GROUP_ID="$(id -g)" \
