@@ -4,10 +4,10 @@
 #SBATCH --time=2:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
-#SBATCH --gres=gpu:a100:4
+#SBATCH --gres=gpu:a100:1
 #SBATCH --constraint="gpu40g|gpu80g|gpu32g"
-#SBATCH --job-name="vortex-img-process"
-#SBATCH --output=vortex_img_process_log.out
+#SBATCH --job-name="vortex-yolo_segmentation-training"
+#SBATCH --output=vortex_segmentation_training_log.out
 #SBATCH --mem=32G
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cluster/apps/eb/software/Python/3.10.4-GCCcore-11.3.0/lib/
