@@ -1,10 +1,7 @@
-README.md
-
-# Vortex image processing
-
-[![codecov](https://codecov.io/github/vortexntnu/vortex-image-processing/graph/badge.svg?token=yS64SRLzUs)](https://codecov.io/github/vortexntnu/vortex-image-processing) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
-
-This is the README file for the directory containing the image processing software created and used by Vortex.
+# Vortex deep learning pipeline
+[![Industrial CI](https://github.com/vortexntnu/vortex-deep-learning-pipelines/actions/workflows/industrial-ci.yml/badge.svg)](https://github.com/vortexntnu/vortex-deep-learning-pipelines/actions/workflows/industrial-ci.yml)
+[![codecov](https://codecov.io/gh/vortexntnu/vortex-deep-learning-pipelines/graph/badge.svg?token=yS64SRLzUs)](https://codecov.io/gh/vortexntnu/vortex-deep-learning-pipelines)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/vortexntnu/vortex-deep-learning-pipelines/main.svg)](https://results.pre-commit.ci/latest/github/vortexntnu/vortex-deep-learning-pipelines/main)
 
 ## Getting Started:
 

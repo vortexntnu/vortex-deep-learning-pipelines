@@ -1,6 +1,4 @@
-"""
-The main entry point for YOLO detecter buoys.
-"""
+"""The main entry point for YOLO detector buoys."""
 
 from os import getcwd, path
 
@@ -8,7 +6,6 @@ from ultralytics import YOLO
 from utils import get_data, get_device, process_video
 
 if "__main__" == __name__:
-
     device = get_device()
     model = YOLO("yolov8n.pt")
 
