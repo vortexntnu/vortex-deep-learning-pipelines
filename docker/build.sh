@@ -4,7 +4,7 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 # Environment Variables
 # ------------------------------------------------------------------------------
-IMAGE="vortex-image-segmentation:latest"   # Docker image name/tag
+IMAGE="vortex-deep-learning-pipelines:latest"   # Docker image name/tag
 BASE_IMAGE="ros:humble"                    # Base image for Docker builds
 
 # ------------------------------------------------------------------------------
