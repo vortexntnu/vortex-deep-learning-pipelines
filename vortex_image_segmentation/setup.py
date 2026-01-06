@@ -16,9 +16,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='devuser',
-    maintainer_email='devuser@todo.todo',
-    description='TODO: Package description',
+    maintainer='mads',
+    maintainer_email='mjengesv@ntnu.no',
+    description='ROS 2 package that provides a YOLO-based instance segmentation node (yolo_seg_node) for real-time segmentation.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
