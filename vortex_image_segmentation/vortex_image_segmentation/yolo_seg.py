@@ -4,6 +4,7 @@ Defines parameter dataclass and main segmentation class.
 """
 
 from dataclasses import dataclass
+from typing import List
 
 import numpy as np
 import torch
@@ -30,16 +31,16 @@ class YoloSegmentation:
     Wrapper class for YOLO segmentation model inference and visualization.
     """
 
-    def __init__(self, params: YoloSegmentationParams):
+    def __init__(self, params: YoloSegmentationParams) -> None:
         """
         Initialize the YOLO segmentation model with given parameters.
         Args:
             params (YoloSegmentationParams): Parameters for YOLO segmentation.
         """
-        self.params = params
-        self.model = self._load_model()
+        self.params: YoloSegmentationParams = params
+        self.model: YOLO = self._load_model()
 
-    def _load_model(self):
+    def _load_model(self) -> YOLO:
         """
         Load the YOLO segmentation model.
         Returns:
@@ -47,13 +48,13 @@ class YoloSegmentation:
         """
         return YOLO(self.params.model_path, task="segment")
 
-    def predict(self, cv_image: np.ndarray):
+    def predict(self, cv_image: np.ndarray) -> List[Results]:
         """
         Run prediction on an input image and return the Results object(s).
         Args:
             cv_image (np.ndarray): Input image in OpenCV format.
         Returns:
-            Results: Ultralytics Results object(s) for the prediction.
+            List[Results]: Ultralytics Results object(s) for the prediction.
         """
         results = self.model.predict(
             source=cv_image,

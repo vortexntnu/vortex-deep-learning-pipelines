@@ -3,11 +3,16 @@ ROS2 node for YOLO segmentation: subscribes to images, runs segmentation, and pu
 """
 
 import rclpy
+from typing import List, Optional
+import numpy as np
 from cv_bridge import CvBridge
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
+from rclpy.publisher import Publisher
+from rclpy.subscription import Subscription
 from sensor_msgs.msg import Image
+from std_msgs.msg import Header
 from ultralytics.engine.results import Results
 from vision_msgs.msg import (
     BoundingBox2D,
@@ -25,42 +30,42 @@ class YoloSegmentationNode(Node):
     Subscribes to an input image topic, runs segmentation, and publishes output images, masks, and confidences.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the YoloSegmentationNode, set up publishers, subscribers, and segmentation model.
         """
         super().__init__("yolo_segmentation_node")
-        self.input_topic = "/gripper_camera/image_raw"
-        self.output_bbox_topic = "/segmentation/bboxes"
-        self.output_mask_topic = "/segmentation/mask"
-        self.debug_topic = "/image_debug"
-        self.debug = True
-        self.imgsz = 640
+        self.input_topic: str = "/gripper_camera/image_raw"
+        self.output_bbox_topic: str = "/segmentation/bboxes"
+        self.output_mask_topic: str = "/segmentation/mask"
+        self.debug_topic: str = "/image_debug"
+        self.debug: bool = True
+        self.imgsz: int = 640
 
-        self.bridge = CvBridge()
+        self.bridge: CvBridge = CvBridge()
         qos_profile = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             history=QoSHistoryPolicy.KEEP_LAST,
             depth=1,
         )
-        self.subscription = self.create_subscription(
+        self.subscription: Subscription = self.create_subscription(
             Image, self.input_topic, self.image_callback, qos_profile
         )
-        self.debug_publisher = self.create_publisher(
+        self.debug_publisher: Publisher = self.create_publisher(
             Image, self.debug_topic, qos_profile
         )
-        self.bbox_pub = self.create_publisher(
+        self.bbox_pub: Publisher = self.create_publisher(
             Detection2DArray, self.output_bbox_topic, qos_profile
         )
-        self.mask_pub = self.create_publisher(
+        self.mask_pub: Publisher = self.create_publisher(
             Image, self.output_mask_topic, qos_profile
         )
 
-        self.params = self.load_params()
+        self.params: YoloSegmentationParams = self.load_params()
         self.get_logger().info(
             f"Loading YOLO model from: {self.params.model_path}"
         )
-        self.segmentation = YoloSegmentation(self.params)
+        self.segmentation: YoloSegmentation = YoloSegmentation(self.params)
         self.get_logger().info(
             f"Node initialized. Subscribing to '{self.input_topic}'"
         )
@@ -72,7 +77,7 @@ class YoloSegmentationNode(Node):
             msg (sensor_msgs.msg.Image): Input image message.
         """
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        results = self.segmentation.predict(cv_image)
+        results: List[Results] = self.segmentation.predict(cv_image)
         # When passing in one image to predict, we always want the first result from the list
         result: Results = results[0]
 
@@ -82,7 +87,7 @@ class YoloSegmentationNode(Node):
         if self.debug:
             self.publish_debug_image(result, msg.header)
 
-    def publish_bboxes_and_confidences(self, result: Results, header):
+    def publish_bboxes_and_confidences(self, result: Results, header: Header) -> None:
         """
         Publish bounding boxes and confidences as Detection2DArray.
         """
@@ -108,23 +113,23 @@ class YoloSegmentationNode(Node):
             det_array.detections.append(det)
         self.bbox_pub.publish(det_array)
 
-    def publish_masks(self, result: Results, header):
+    def publish_masks(self, result: Results, header: Header) -> None:
         """
         Publish segmentation masks as mono8 Image messages.
         """
-        masks = result.masks.data.cpu().numpy()
+        masks: np.ndarray = result.masks.data.cpu().numpy()
         for mask in masks:
-            mask_img = (mask * 255).astype("uint8")
-            mask_msg = self.bridge.cv2_to_imgmsg(mask_img, encoding="mono8")
+            mask_img: np.ndarray = (mask * 255).astype("uint8")
+            mask_msg: Image = self.bridge.cv2_to_imgmsg(mask_img, encoding="mono8")
             mask_msg.header = header
             self.mask_pub.publish(mask_msg)
 
-    def publish_debug_image(self, result: Results, header):
+    def publish_debug_image(self, result: Results, header: Header) -> None:
         """
         Publish debug visualization image.
         """
-        debug_img = self.segmentation.visualize(result)
-        debug_msg = self.bridge.cv2_to_imgmsg(debug_img, "bgr8")
+        debug_img: np.ndarray = self.segmentation.visualize(result)
+        debug_msg: Image = self.bridge.cv2_to_imgmsg(debug_img, "bgr8")
         debug_msg.header = header
         self.debug_publisher.publish(debug_msg)
 
@@ -163,7 +168,7 @@ class YoloSegmentationNode(Node):
         )
 
 
-def main(args=None):
+def main(args: Optional[List[str]] = None) -> None:
     """
     Entry point for the ROS2 node. Initializes and spins the YoloSegmentationNode.
     """
