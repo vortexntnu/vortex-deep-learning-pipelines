@@ -23,6 +23,7 @@ with open("config.yaml") as f:
 # Parameters
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY")
 PROJECT_ID = config["project_id"]
+WORKSPACE_ID = config["workspace_id"]
 VERSION = config["version"]
 MODEL_TYPE = config.get("model_type")
 EPOCHS = config.get("epochs")
@@ -39,13 +40,26 @@ if not ROBOFLOW_API_KEY:
 
 # Download dataset from Roboflow into 'roboflow_data/'
 roboflow_data_dir = Path(__file__).parent / "roboflow_data"
+dataset_dir = roboflow_data_dir / f"{PROJECT_ID}-v{VERSION}"
+dataset_dir.mkdir(parents=True, exist_ok=True)
+force_re_download = False
+
+if not any(dataset_dir.iterdir()) or force_re_download:
+    rf = Roboflow(api_key=ROBOFLOW_API_KEY)
     project = rf.workspace(WORKSPACE_ID).project(PROJECT_ID)
+    version = project.version(VERSION)
+    
+    dataset = version.download(
+        DATASET_FORMAT, 
+        location=str(dataset_dir),
+        overwrite=True
+    )
+else:
+    print("Dataset already exists. Skipping download.")
 
 # Set up training configuration
 model = YOLO(MODEL_TYPE)
-subfolder_name = f"{dataset.name.replace(' ', '-')}-{VERSION}"
-data_yaml_path = Path(dataset.location) / subfolder_name / "data.yaml"
-
+data_yaml_path = dataset_dir / "data.yaml"
 
 # Select device: CUDA, MPS (Apple Silicon), or CPU
 if torch.cuda.is_available():
@@ -62,9 +76,8 @@ WORKERS = os.cpu_count() // 2 if os.cpu_count() else 2
 print(f"Using {WORKERS} workers")
 
 model_base = Path(MODEL_TYPE).stem
-dataset_base = getattr(dataset, "name").strip().lower()
 timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-run_name = f"{model_base}-{dataset_base}-v{VERSION}-{timestamp}".replace(" ", "-")
+run_name = f"{model_base}-{dataset_dir}-{timestamp}".replace(" ", "-")
 
 print(f"Training run name: {run_name}")
 
