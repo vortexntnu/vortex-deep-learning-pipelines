@@ -178,3 +178,6 @@ data/
 # Training outputs and Roboflow datasets
 results/
 roboflow_data/
+
+# Mac
+*.DS_Store
