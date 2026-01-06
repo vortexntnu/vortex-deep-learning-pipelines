@@ -39,12 +39,7 @@ if not ROBOFLOW_API_KEY:
 
 # Download dataset from Roboflow into 'roboflow_data/'
 roboflow_data_dir = Path(__file__).parent / "roboflow_data"
-roboflow_data_dir.mkdir(exist_ok=True)
-rf = Roboflow(api_key=ROBOFLOW_API_KEY)
-project = rf.workspace().project(PROJECT_ID)
-dataset = project.version(VERSION).download(
-    DATASET_FORMAT, location=str(roboflow_data_dir)
-)
+    project = rf.workspace(WORKSPACE_ID).project(PROJECT_ID)
 
 # Set up training configuration
 model = YOLO(MODEL_TYPE)
