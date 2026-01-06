@@ -1,10 +1,16 @@
 yolo_segmentation_node:
   ros__parameters:
-    model_path: "/ros2_ws/yolo_roboflow_training/results/custom_yolov89/weights/last.pt"
+    # Node parameters
+    input_topic: "/gripper_camera/image_raw"
+    output_bbox_topic: "/segmentation/bboxes"
+    output_mask_topic: "/segmentation/mask"
+    debug_topic: "/image_debug"
+
+    # Implementation parameters
+    model_path: "/ros2_ws/yolo_segmentation_training/results/custom_yolov89/weights/last.pt"
     device: "cpu"
     imgsz: 640
     confidence_threshold: 0.2
     max_detections: 1
     compile: True
-    
     debug: True

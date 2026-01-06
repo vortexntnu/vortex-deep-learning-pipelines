@@ -3,6 +3,7 @@ ROS2 node for YOLO segmentation: subscribes to images, runs segmentation, and pu
 """
 
 import rclpy
+from dataclasses import dataclass
 from typing import List, Optional
 import numpy as np
 from cv_bridge import CvBridge
@@ -24,6 +25,15 @@ from vision_msgs.msg import (
 from .yolo_seg import YoloSegmentation, YoloSegmentationParams
 
 
+@dataclass
+class YoloNodeParams:
+    input_topic: str
+    output_bbox_topic: str
+    output_mask_topic: str
+    debug_topic: str
+    debug: bool
+
+
 class YoloSegmentationNode(Node):
     """
     ROS2 node for running YOLO segmentation and publishing results.
@@ -35,12 +45,12 @@ class YoloSegmentationNode(Node):
         Initialize the YoloSegmentationNode, set up publishers, subscribers, and segmentation model.
         """
         super().__init__("yolo_segmentation_node")
-        self.input_topic: str = "/gripper_camera/image_raw"
-        self.output_bbox_topic: str = "/segmentation/bboxes"
-        self.output_mask_topic: str = "/segmentation/mask"
-        self.debug_topic: str = "/image_debug"
-        self.debug: bool = True
-        self.imgsz: int = 640
+        node_params = self.load_node_params()
+        self.input_topic: str = node_params.input_topic
+        self.output_bbox_topic: str = node_params.output_bbox_topic
+        self.output_mask_topic: str = node_params.output_mask_topic
+        self.debug_topic: str = node_params.debug_topic
+        self.debug: bool = node_params.debug
 
         self.bridge: CvBridge = CvBridge()
         qos_profile = QoSProfile(
@@ -117,6 +127,9 @@ class YoloSegmentationNode(Node):
         """
         Publish segmentation masks as mono8 Image messages.
         """
+        if result.masks is None:
+            return
+        
         masks: np.ndarray = result.masks.data.cpu().numpy()
         for mask in masks:
             mask_img: np.ndarray = (mask * 255).astype("uint8")
@@ -133,9 +146,38 @@ class YoloSegmentationNode(Node):
         debug_msg.header = header
         self.debug_publisher.publish(debug_msg)
 
+    def load_node_params(self) -> YoloNodeParams:
+        """
+        Load node-specific parameters (topics, debug).
+        Returns:
+            YoloNodeParams: Node parameter dataclass.
+        """
+        self.declare_parameter("input_topic", "/gripper_camera/image_raw")
+        self.declare_parameter("output_bbox_topic", "/segmentation/bboxes")
+        self.declare_parameter("output_mask_topic", "/segmentation/mask")
+        self.declare_parameter("debug_topic", "/image_debug")
+        self.declare_parameter("debug", True)
+        return YoloNodeParams(
+            input_topic=self.get_parameter("input_topic")
+            .get_parameter_value()
+            .string_value,
+            output_bbox_topic=self.get_parameter("output_bbox_topic")
+            .get_parameter_value()
+            .string_value,
+            output_mask_topic=self.get_parameter("output_mask_topic")
+            .get_parameter_value()
+            .string_value,
+            debug_topic=self.get_parameter("debug_topic")
+            .get_parameter_value()
+            .string_value,
+            debug=self.get_parameter("debug")
+            .get_parameter_value()
+            .bool_value,
+        )
+
     def load_params(self) -> YoloSegmentationParams:
         """
-        Load segmentation parameters from ROS2 node parameters.
+        Load segmentation parameters.
         Returns:
             YoloSegmentationParams: Segmentation parameters dataclass.
         """
@@ -145,7 +187,6 @@ class YoloSegmentationNode(Node):
         self.declare_parameter("max_detections", Parameter.Type.INTEGER)
         self.declare_parameter("imgsz", Parameter.Type.INTEGER)
         self.declare_parameter("compile", Parameter.Type.BOOL)
-        self.declare_parameter("debug", Parameter.Type.BOOL)
         return YoloSegmentationParams(
             device=self.get_parameter("device")
             .get_parameter_value()
@@ -155,7 +196,7 @@ class YoloSegmentationNode(Node):
             .string_value,
             confidence_threshold=self.get_parameter("confidence_threshold")
             .get_parameter_value()
-            .integer_value,
+            .double_value,
             max_detections=self.get_parameter("max_detections")
             .get_parameter_value()
             .integer_value,
