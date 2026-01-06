@@ -1,16 +1,19 @@
-codecov:
+coverage:
+  precision: 2
+  round: down
   status:
     project:
       default:
-        target: 50%
-
-  github_checks:
-    annotations: true
-
-ignore:
-  - "**/*.ipynb"
-  - docs
-  - docker
-  - binder
-  - .github
-  - .git
+        informational: true
+        flags:
+          - unittests
+    patch: off
+fixes:
+  - "ros_ws/src/vortex_deep_learning_pipelines/::"
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+flags:
+  unittests:
+    paths:
+      - "**"

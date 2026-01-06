@@ -1,6 +1,4 @@
-"""
-Module for the utility functions.
-"""
+"""Module for the utility functions."""
 
 from os import getcwd, path
 
@@ -10,8 +8,8 @@ from utils import get_data, get_device
 
 
 def test_get_device() -> None:
-    """
-    Test the get_device function.
+    """Test the get_device function.
+
     This makes sure that if the function is changed, the tests verifies that
     the function returns the expected device.
     """
@@ -22,8 +20,8 @@ def test_get_device() -> None:
 
 
 def test_get_data() -> None:
-    """
-    Test the get_data function.
+    """Test the get_data function.
+
     This makes sure that if the function is changed, the tests verifies that
     the function returns the expected dataset location.
     """
@@ -33,6 +31,6 @@ def test_get_data() -> None:
 
     expected_location = path.join(getcwd(), "data")
 
-    assert path.normpath(dataset.location) == path.normpath(
-        expected_location
-    ), "The dataset location is not correct."
+    assert path.normpath(dataset.location) == path.normpath(expected_location), (
+        "The dataset location is not correct."
+    )
