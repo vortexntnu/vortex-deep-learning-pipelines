@@ -61,9 +61,10 @@ class YoloSegmentationNode(Node):
         self.subscription: Subscription = self.create_subscription(
             Image, self.input_topic, self.image_callback, qos_profile
         )
-        self.debug_publisher: Publisher = self.create_publisher(
-            Image, self.debug_topic, qos_profile
-        )
+        if self.debug:
+            self.debug_publisher: Publisher = self.create_publisher(
+                Image, self.debug_topic, qos_profile
+            )
         self.bbox_pub: Publisher = self.create_publisher(
             Detection2DArray, self.output_bbox_topic, qos_profile
         )
