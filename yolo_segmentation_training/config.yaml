@@ -3,7 +3,7 @@ project_id: "pipe-line-instance-seg-rxqdn"
 workspace_id: "hei-qp1ee"
 version: "1"  # Dataset version number (exclude 'v')
 # TODO: test and compare pretrained models and look at accuracy vs. speed tradeoff
-# Currently v8 nano model because it is the smalles and fastest to train. Consider trying s or m versions to capture more complexity
+# Currently v8 nano model because it is the smallest and fastest to train. Consider trying s or m versions to capture more complexity
 model_type: "yolov8n-seg.pt"
 epochs: 5
 patience: 2
