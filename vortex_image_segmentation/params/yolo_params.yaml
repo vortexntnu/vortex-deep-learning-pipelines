@@ -13,4 +13,6 @@ yolo_segmentation_node:
     confidence_threshold: 0.2
     max_detections: 1
     compile: True
-    debug: True
+    pub_bbox: True
+    pub_mask: True
+    pub_debug: True
