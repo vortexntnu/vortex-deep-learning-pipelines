@@ -120,10 +120,12 @@ class YoloSegmentationNode(Node):
         for (x1, y1, x2, y2), conf, cls_id in zip(boxes, confs, clss):
             det = Detection2D()
             det.header = header
+            
             hyp = ObjectHypothesisWithPose()
             hyp.hypothesis.class_id = str(int(cls_id))
             hyp.hypothesis.score = float(conf)
             det.results.append(hyp)
+            
             bbox = BoundingBox2D()
             bbox.center.position.x = float((x1 + x2) / 2.0)
             bbox.center.position.y = float((y1 + y2) / 2.0)
@@ -132,6 +134,7 @@ class YoloSegmentationNode(Node):
             bbox.size_y = float(y2 - y1)
             det.bbox = bbox
             det_array.detections.append(det)
+            
         self.bbox_pub.publish(det_array)
 
     def publish_masks(self, result: Results, header: Header) -> None:
@@ -144,11 +147,17 @@ class YoloSegmentationNode(Node):
             return
         
         masks: np.ndarray = result.masks.data.cpu().numpy()
-        for mask in masks:
-            mask_img: np.ndarray = (mask * 255).astype("uint8")
-            mask_msg: Image = self.bridge.cv2_to_imgmsg(mask_img, encoding="mono8")
-            mask_msg.header = header
-            self.mask_pub.publish(mask_msg)
+
+        if masks.shape[0] == 0:
+            return
+
+        # Create a single binary mask where any non-zero instance pixel becomes detection
+        binary_masks = masks > 0.0
+        combined = np.any(binary_masks, axis=0).astype("uint8") * 255
+
+        mask_msg: Image = self.bridge.cv2_to_imgmsg(combined, encoding="mono8")
+        mask_msg.header = header
+        self.mask_pub.publish(mask_msg)
 
     def publish_debug_image(self, result: Results, header: Header) -> None:
         """
@@ -210,6 +219,7 @@ class YoloSegmentationNode(Node):
         self.declare_parameter("max_detections", Parameter.Type.INTEGER)
         self.declare_parameter("imgsz", Parameter.Type.INTEGER)
         self.declare_parameter("compile", Parameter.Type.BOOL)
+        self.declare_parameter("retina_masks", Parameter.Type.BOOL)
         return YoloSegmentationParams(
             device=self.get_parameter("device")
             .get_parameter_value()
@@ -227,6 +237,9 @@ class YoloSegmentationNode(Node):
             .get_parameter_value()
             .integer_value,
             compile=self.get_parameter("compile")
+            .get_parameter_value()
+            .bool_value,
+            retina_masks=self.get_parameter("retina_masks")
             .get_parameter_value()
             .bool_value,
         )

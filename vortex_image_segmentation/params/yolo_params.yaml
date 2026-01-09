@@ -5,14 +5,15 @@ yolo_segmentation_node:
     output_bbox_topic: "/segmentation/bboxes"
     output_mask_topic: "/segmentation/mask"
     debug_topic: "/image_debug"
+    pub_bbox: True
+    pub_mask: True
+    pub_debug: True
 
     # Implementation parameters
     model_path: "/ros2_ws/yolo_segmentation_training/results/custom_yolov89/weights/last.pt"
     device: "cpu"
     imgsz: 640
-    confidence_threshold: 0.2
+    confidence_threshold: 0.3
     max_detections: 1
     compile: True
-    pub_bbox: True
-    pub_mask: True
-    pub_debug: True
+    retina_masks: False # We dont need high res masks

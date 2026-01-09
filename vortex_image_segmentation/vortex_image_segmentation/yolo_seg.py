@@ -17,13 +17,13 @@ class YoloSegmentationParams:
     """
     Dataclass for storing YOLO segmentation parameters.
     """
-
     model_path: str
     device: str
     confidence_threshold: float
     max_detections: int
     imgsz: int
     compile: bool
+    retina_masks: bool
 
 
 class YoloSegmentation:
@@ -62,6 +62,7 @@ class YoloSegmentation:
             conf=self.params.confidence_threshold,
             device=torch.device(self.params.device),
             max_det=self.params.max_detections,
+            retina_masks=self.params.retina_masks,
             # compile=self.params.compile,
         )
         return results
