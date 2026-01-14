@@ -2,12 +2,12 @@ yolo_segmentation_node:
   ros__parameters:
     # Node parameters
     input_topic: "/gripper_camera/image_raw"
-    output_bbox_topic: "/segmentation/bboxes"
-    output_mask_topic: "/segmentation/mask"
-    debug_topic: "/image_debug"
+    output_bbox_topic: "/pipeline/camera/bboxes"
+    output_mask_topic: "/pipeline/camera/segmentation_mask"
+    debug_topic: "/pipeline/camera/segmentation_debug"
     pub_bbox: True
     pub_mask: True
-    pub_debug: True
+    pub_debug: False
 
     # Implementation parameters
     model_path: "/ros2_ws/yolo_segmentation_training/results/custom_yolov89/weights/last.pt"
@@ -15,4 +15,4 @@ yolo_segmentation_node:
     imgsz: 640
     confidence_threshold: 0.3
     max_detections: 1
-    compile: False # Set to true for faster inference speed
+    compile: False # Set this to True for faster inference speed
