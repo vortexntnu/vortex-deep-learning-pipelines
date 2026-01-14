@@ -47,14 +47,7 @@ class YoloSegmentationNode(Node):
         Initialize the YoloSegmentationNode, set up publishers, subscribers, and segmentation model.
         """
         super().__init__("yolo_segmentation_node")
-        node_params = self.load_node_params()
-        self.input_topic: str = node_params.input_topic
-        self.output_bbox_topic: str = node_params.output_bbox_topic
-        self.output_mask_topic: str = node_params.output_mask_topic
-        self.debug_topic: str = node_params.debug_topic
-        self.pub_bbox: bool = node_params.pub_bbox
-        self.pub_mask: bool = node_params.pub_mask
-        self.pub_debug: bool = node_params.pub_debug
+        self.node_params = self.load_node_params()
 
         self.bridge: CvBridge = CvBridge()
         qos_profile = QoSProfile(
@@ -63,23 +56,20 @@ class YoloSegmentationNode(Node):
             depth=1,
         )
         self.subscription: Subscription = self.create_subscription(
-            Image, self.input_topic, self.image_callback, qos_profile
+            Image, self.node_params.input_topic, self.image_callback, qos_profile
         )
-        self.debug_publisher: Optional[Publisher] = None
-        self.bbox_pub: Optional[Publisher] = None
-        self.mask_pub: Optional[Publisher] = None
 
-        if self.pub_debug:
+        if self.node_params.pub_debug:
             self.debug_publisher = self.create_publisher(
-                Image, self.debug_topic, qos_profile
+                Image, self.node_params.debug_topic, qos_profile
             )
-        if self.pub_bbox:
-            self.bbox_pub = self.create_publisher(
-                Detection2DArray, self.output_bbox_topic, qos_profile
+        if self.node_params.pub_bbox:
+            self.bbox_publisher = self.create_publisher(
+                Detection2DArray, self.node_params.output_bbox_topic, qos_profile
             )
-        if self.pub_mask:
-            self.mask_pub = self.create_publisher(
-                Image, self.output_mask_topic, qos_profile
+        if self.node_params.pub_mask:
+            self.mask_publisher = self.create_publisher(
+                Image, self.node_params.output_mask_topic, qos_profile
             )
 
         self.params: YoloSegmentationParams = self.load_params()
@@ -88,7 +78,7 @@ class YoloSegmentationNode(Node):
         )
         self.segmentation: YoloSegmentation = YoloSegmentation(self.params)
         self.get_logger().info(
-            f"Node initialized. Subscribing to '{self.input_topic}'"
+            f"Node initialized. Subscribing to '{self.node_params.input_topic}'"
         )
 
     def image_callback(self, msg: Image) -> None:
@@ -102,16 +92,19 @@ class YoloSegmentationNode(Node):
         # When passing in one image to predict, we always want the first result from the list
         result: Results = results[0]
 
-        self.publish_bboxes_and_confidences(result, msg.header)
-        self.publish_masks(result, msg.header)
-        self.publish_debug_image(result, msg.header)
+        if self.node_params.pub_bbox:
+            self.publish_bboxes_and_confidences(result, msg.header)
+        
+        if self.node_params.pub_mask:
+            self.publish_masks(result, msg.header)
+        
+        if self.node_params.pub_debug:
+            self.publish_debug_image(result, msg.header)
 
     def publish_bboxes_and_confidences(self, result: Results, header: Header) -> None:
         """
         Publish bounding boxes and confidences as Detection2DArray.
         """
-        if getattr(self, "bbox_pub", None) is None:
-            return
         det_array = Detection2DArray()
         det_array.header = header
         boxes = result.boxes.xyxy.cpu().numpy()
@@ -134,15 +127,14 @@ class YoloSegmentationNode(Node):
             bbox.size_y = float(y2 - y1)
             det.bbox = bbox
             det_array.detections.append(det)
+        
+        self.bbox_publisher.publish(det_array)
             
-        self.bbox_pub.publish(det_array)
 
     def publish_masks(self, result: Results, header: Header) -> None:
         """
         Publish segmentation masks as mono8 Image messages.
         """
-        if getattr(self, "mask_pub", None) is None:
-            return
         if result.masks is None:
             return
         
@@ -157,14 +149,12 @@ class YoloSegmentationNode(Node):
 
         mask_msg: Image = self.bridge.cv2_to_imgmsg(combined, encoding="mono8")
         mask_msg.header = header
-        self.mask_pub.publish(mask_msg)
+        self.mask_publisher.publish(mask_msg)
 
     def publish_debug_image(self, result: Results, header: Header) -> None:
         """
         Publish debug visualization image.
         """
-        if getattr(self, "debug_publisher", None) is None:
-            return
         debug_img: np.ndarray = self.segmentation.visualize(result)
         debug_msg: Image = self.bridge.cv2_to_imgmsg(debug_img, "bgr8")
         debug_msg.header = header
@@ -219,7 +209,6 @@ class YoloSegmentationNode(Node):
         self.declare_parameter("max_detections", Parameter.Type.INTEGER)
         self.declare_parameter("imgsz", Parameter.Type.INTEGER)
         self.declare_parameter("compile", Parameter.Type.BOOL)
-        self.declare_parameter("retina_masks", Parameter.Type.BOOL)
         return YoloSegmentationParams(
             device=self.get_parameter("device")
             .get_parameter_value()
@@ -238,10 +227,7 @@ class YoloSegmentationNode(Node):
             .integer_value,
             compile=self.get_parameter("compile")
             .get_parameter_value()
-            .bool_value,
-            retina_masks=self.get_parameter("retina_masks")
-            .get_parameter_value()
-            .bool_value,
+            .bool_value
         )
 
 

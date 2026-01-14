@@ -15,5 +15,4 @@ yolo_segmentation_node:
     imgsz: 640
     confidence_threshold: 0.3
     max_detections: 1
-    compile: True
-    retina_masks: False # We dont need high res masks
+    compile: False # Set to true for faster inference speed
