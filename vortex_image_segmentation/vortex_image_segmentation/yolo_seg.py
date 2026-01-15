@@ -36,8 +36,8 @@ class YoloSegmentation:
         Args:
             params (YoloSegmentationParams): Parameters for YOLO segmentation.
         """
-        self.params: YoloSegmentationParams = params
-        self.model: YOLO = self._load_model()
+        self._params: YoloSegmentationParams = params
+        self._model: YOLO = self._load_model()
 
     def _load_model(self) -> YOLO:
         """
@@ -45,7 +45,7 @@ class YoloSegmentation:
         Returns:
             YOLO: Ultralytics YOLO model instance.
         """
-        return YOLO(self.params.model_path, task="segment")
+        return YOLO(self._params.model_path, task="segment")
 
     def predict(self, cv_image: np.ndarray) -> List[Results]:
         """
@@ -55,13 +55,13 @@ class YoloSegmentation:
         Returns:
             List[Results]: Ultralytics Results object(s) for the prediction.
         """
-        results = self.model.predict(
+        results = self._model.predict(
             source=cv_image,
-            imgsz=self.params.imgsz,
-            conf=self.params.confidence_threshold,
-            device=torch.device(self.params.device),
-            max_det=self.params.max_detections,
-            compile=self.params.compile
+            imgsz=self._params.imgsz,
+            conf=self._params.confidence_threshold,
+            device=torch.device(self._params.device),
+            max_det=self._params.max_detections,
+            compile=self._params.compile
         )
         return results
 
