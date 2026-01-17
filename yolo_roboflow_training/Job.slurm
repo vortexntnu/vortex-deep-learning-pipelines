@@ -28,15 +28,15 @@ VENV_DIR=$(mktemp -d -t env-repaint-XXXXXXXXXX)
 python3 -m venv $VENV_DIR
 source $VENV_DIR/bin/activate
 
-pip install --upgrade pip 
+pip install --upgrade pip
 
 # install the required packages
 pip install -r requirements.txt
 #pip install pyyaml # used to read the configuration file
 #pip install blobfile # install blobfile to download the dataset
 #pip install kagglehub # install kagglehub to download the dataset
-pip install --force-reinstall torch -U 
-pip install torchvision torchaudio 
+pip install --force-reinstall torch -U
+pip install torchvision torchaudio
 #pip install diffusers transformers accelerate --user
 
 # Mixing expandable_segments:True with max_split_size doesn't make sense because the expandable segment is the size of RAM and so it could never be split with max_split_size.
