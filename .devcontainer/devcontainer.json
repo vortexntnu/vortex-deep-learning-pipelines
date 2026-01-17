@@ -1,6 +1,6 @@
 {
-    "name": "vortex-image-segmentation-devcontainer",
-    "image": "vortex-image-segmentation:latest",
+    "name": "vortex-deep-learning-pipelines-devcontainer",
+    "image": "vortex-deep-learning-pipelines:latest",
     "customizations": {
         "vscode": {
             "settings": {

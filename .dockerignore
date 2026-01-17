@@ -28,3 +28,4 @@ venv/
 *.swo
 node_modules/
 bags/
+rosbags/
