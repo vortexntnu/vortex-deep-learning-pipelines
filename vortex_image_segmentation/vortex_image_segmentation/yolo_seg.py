@@ -48,7 +48,9 @@ class YoloSegmentation:
 
         Args:
             cv_image (np.ndarray): Input image in OpenCV format.
-        Returns: list[Results]: Ultralytics Results object(s) for the prediction.
+
+        Returns:
+            list[Results]: Ultralytics Results object(s) for the prediction.
         """
         results = self._model.predict(
             source=cv_image,
