@@ -1,8 +1,7 @@
-"""ROS2 node for YOLO segmentation: subscribes to images, runs segmentation, and publishes results.
-"""
+"""ROS2 node for YOLO segmentation: subscribes to images, runs segmentation, and publishes results."""
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 import rclpy
@@ -37,12 +36,12 @@ class YoloNodeParams:
 
 class YoloSegmentationNode(Node):
     """ROS2 node for running YOLO segmentation and publishing results.
+
     Subscribes to an input image topic, runs segmentation, and publishes output images, masks, and confidences.
     """
 
     def __init__(self) -> None:
-        """Initialize the YoloSegmentationNode, set up publishers, subscribers, and segmentation model.
-        """
+        """Initialize the YoloSegmentationNode, set up publishers, subscribers, and segmentation model."""
         super().__init__("yolo_segmentation_node")
         self._node_params = self.load_node_params()
 
@@ -83,7 +82,7 @@ class YoloSegmentationNode(Node):
             msg (sensor_msgs.msg.Image): Input image message.
         """
         cv_image = self._bridge.imgmsg_to_cv2(msg, "bgr8")
-        results: List[Results] = self._segmentation.predict(cv_image)
+        results: list[Results] = self._segmentation.predict(cv_image)
         # When passing in one image to predict, we always want the first result from the list
         result: Results = results[0]
 
@@ -97,8 +96,7 @@ class YoloSegmentationNode(Node):
             self.publish_debug_image(result, msg.header)
 
     def publish_bboxes_and_confidences(self, result: Results, header: Header) -> None:
-        """Publish bounding boxes and confidences as Detection2DArray.
-        """
+        """Publish bounding boxes and confidences as Detection2DArray."""
         det_array = Detection2DArray()
         det_array.header = header
         boxes = result.boxes.xyxy.cpu().numpy()
@@ -125,8 +123,7 @@ class YoloSegmentationNode(Node):
         self._bbox_publisher.publish(det_array)
 
     def publish_masks(self, result: Results, header: Header) -> None:
-        """Publish segmentation masks as mono8 Image messages.
-        """
+        """Publish segmentation masks as mono8 Image messages."""
         if result.masks is None:
             return
 
@@ -144,8 +141,7 @@ class YoloSegmentationNode(Node):
         self._mask_publisher.publish(mask_msg)
 
     def publish_debug_image(self, result: Results, header: Header) -> None:
-        """Publish debug visualization image.
-        """
+        """Publish debug visualization image."""
         debug_img: np.ndarray = self._segmentation.visualize(result)
         debug_msg: Image = self._bridge.cv2_to_imgmsg(debug_img, "bgr8")
         debug_msg.header = header
@@ -210,9 +206,8 @@ class YoloSegmentationNode(Node):
         )
 
 
-def main(args: Optional[List[str]] = None) -> None:
-    """Entry point for the ROS2 node. Initializes and spins the YoloSegmentationNode.
-    """
+def main(args: Optional[list[str]] = None) -> None:
+    """Entry point for the ROS2 node. Initializes and spins the YoloSegmentationNode."""
     rclpy.init(args=args)
     node = YoloSegmentationNode()
     try:
