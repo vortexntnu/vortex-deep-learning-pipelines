@@ -8,7 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -26,13 +25,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-#VSCode
-.vscode/
-
 # OS Generated files
-.DS_Store
-.DS_Store?
-._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
@@ -177,7 +170,8 @@ cython_debug/
 
 runs/
 *.pt
-*jpg
+*.jpg
+*.jpeg
 
 # ROS 2 build artifacts
 install/
@@ -185,6 +179,15 @@ build/
 log/
 
 # data
+data/
+*.out
+*/*.out
+
+.vscode/
+
+# Ignore all experiment result folders
+object_detection_training/*/
+unet_roboflow_training/*/
 bags/
 rosbags/
 
@@ -193,4 +196,4 @@ results/
 roboflow_data/
 
 # Mac
-*.DS_Store
+.DS_Store

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --partition=GPUQ
 #SBATCH --account=studiegrupper-vortex
-#SBATCH --job-name=vortex-instance-seg-train
+#SBATCH --job-name=vortex-obj-detect-train
 #SBATCH --time=1:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

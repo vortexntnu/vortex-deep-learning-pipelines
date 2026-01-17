@@ -1,9 +1,9 @@
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
 import yaml
-from datetime import datetime, timezone
 from dotenv import load_dotenv
 from roboflow import Roboflow
 from ultralytics import YOLO
@@ -48,11 +48,9 @@ if not any(dataset_dir.iterdir()) or force_re_download:
     rf = Roboflow(api_key=ROBOFLOW_API_KEY)
     project = rf.workspace(WORKSPACE_ID).project(PROJECT_ID)
     version = project.version(VERSION)
-    
+
     dataset = version.download(
-        DATASET_FORMAT, 
-        location=str(dataset_dir),
-        overwrite=True
+        DATASET_FORMAT, location=str(dataset_dir), overwrite=True
     )
 else:
     print("Dataset already exists. Skipping download.")
