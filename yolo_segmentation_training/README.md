@@ -54,7 +54,7 @@ squeue -u $USER
 - Follow the job output:
 
 ```bash
-tail -f $(ls -t vortex-obj-detect-train_*.out | head -n 1)
+tail -f $(ls -t vortex-instance-seg-train_*.out | head -n 1)
 ```
 
 ## Canceling a job

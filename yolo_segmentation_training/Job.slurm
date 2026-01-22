@@ -2,13 +2,13 @@
 #SBATCH --partition=GPUQ
 #SBATCH --account=studiegrupper-vortex
 #SBATCH --job-name=vortex-instance-seg-train
-#SBATCH --time=1:00:00
+#SBATCH --time=2:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:a100:1
 #SBATCH --constraint="gpu40g|gpu80g|gpu32g"
-#SBATCH --mem=32G
+#SBATCH --mem=48G
 #SBATCH --output=%x_%j.out
 
 set -euo pipefail
