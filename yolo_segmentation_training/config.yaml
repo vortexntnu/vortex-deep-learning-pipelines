@@ -3,13 +3,14 @@ project_id: "pipe_seg_merge_jan_2026"
 workspace_id: "hei-qp1ee"
 version: "1"  # Dataset version number (exclude 'v')
 # TODO: test and compare pretrained models and look at accuracy vs. speed tradeoff
-# Currently v8 nano model because it is the smalles and fastest to train. Consider trying s or m versions to capture more complexity
+# Currently yolo26 small model because its latest and greatest. 
+# Small is chosen as the sweet spot between speed and complexity
 model_type: "yolo26s-seg.pt"
 dataset_format: "YOLO26"
 epochs: 100
 patience: 30
 imgsz: 640
-batch: -1
+batch: -1  # Auto-calculate based on your GPU
 results_dir: "results"
 export_formats:
   - onnx
