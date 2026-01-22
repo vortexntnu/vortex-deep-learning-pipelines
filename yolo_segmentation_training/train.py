@@ -70,9 +70,9 @@ else:
     device = 'cpu'
     print("Using CPU.")
 
-slurm_cpus = int(os.getenv("SLURM_CPUS_PER_TASK"))
+slurm_cpus = os.getenv("SLURM_CPUS_PER_TASK")
 if slurm_cpus:
-    WORKERS = slurm_cpus
+    WORKERS = int(slurm_cpus)
     print(f"Running on Cluster: Using {WORKERS} Slurm-allocated workers")
 else:
     local_cpus = os.cpu_count() or 4
