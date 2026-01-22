@@ -10,7 +10,7 @@ yolo_segmentation_node:
     pub_debug: False
 
     # Implementation parameters
-    model_path: "/ros2_ws/yolo_segmentation_training/results/custom_yolov89/weights/last.pt"
+    model_path: "/ros2_ws/yolo_segmentation_training/results/pipe_seg_merge_jan_2026-v1-20260122-140625/weights/best.pt"
     device: "cpu"
     imgsz: 640
     confidence_threshold: 0.3

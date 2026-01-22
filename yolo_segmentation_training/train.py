@@ -70,12 +70,18 @@ else:
     device = 'cpu'
     print("Using CPU.")
 
-WORKERS = os.cpu_count() // 2 if os.cpu_count() else 2
-print(f"Using {WORKERS} workers")
+slurm_cpus = os.getenv("SLURM_CPUS_PER_TASK")
+if slurm_cpus:
+    WORKERS = int(slurm_cpus)
+    print(f"Running on Cluster: Using {WORKERS} Slurm-allocated workers")
+else:
+    local_cpus = os.cpu_count() or 4
+    WORKERS = min(8, local_cpus // 2)
+    print(f"Running Locally: Using {WORKERS} out of {local_cpus} available CPU cores")
 
 model_base = Path(MODEL_TYPE).stem
 timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-run_name = f"{model_base}-{dataset_dir}-{timestamp}".replace(" ", "-")
+run_name = f"{model_base}-{dataset_dir.name}-{timestamp}".replace(" ", "-")
 
 print(f"Training run name: {run_name}")
 
@@ -94,7 +100,7 @@ model.train(
 
 
 # Evaluate the model
-metrics = model.val(data=str(data_yaml_path))
+metrics = model.val()
 print(f"Validation metrics: {metrics}")
 
 
