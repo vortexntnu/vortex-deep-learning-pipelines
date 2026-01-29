@@ -69,7 +69,6 @@ class YoloObjectDetection(Node):
         self.model = yolo_utils.load_model(mp, self.model_conf)
         self.conf = self.model_conf
 
-
     def on_image(self, msg: Image):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
 
