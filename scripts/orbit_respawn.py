@@ -11,7 +11,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point, Quaternion
 from stonefish_ros2.srv import Respawn
 
-SLEEP_TIME = 2
+SLEEP_TIME = 1  # seconds, internal sleep per tick to allow mask_detection node to process
 
 @dataclass
 class Vec3:

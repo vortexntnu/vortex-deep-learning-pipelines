@@ -56,17 +56,26 @@ public:
 
 private:
     std::filesystem::path out_dir_;
+    bool sync_with_front_camera_ = true;
+    int sync_queue_size_ = 20;
+    double sync_max_interval_sec_ = 0.5;
     // Segmentation camera to obtain mask
     message_filters::Subscriber<sensor_msgs::msg::Image> segmentation_image_color_sub_;
     message_filters::Subscriber<sensor_msgs::msg::Image> segmentation_image_id_sub_;
     message_filters::Subscriber<sensor_msgs::msg::Image> front_camera_color_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr front_camera_color_sub_direct_;
+    std::mutex last_front_mutex_;
 
     // Synchronization policy
-    using MySyncPolicy = message_filters::sync_policies::ApproximateTime<
+    using SyncPolicy3 = message_filters::sync_policies::ApproximateTime<
         sensor_msgs::msg::Image,                       // Segmentation image color
         sensor_msgs::msg::Image,                       // Segmentation image id
         sensor_msgs::msg::Image>;                      // Front camera color
-    std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
+    using SyncPolicy2 = message_filters::sync_policies::ApproximateTime<
+        sensor_msgs::msg::Image,                       // Segmentation image color
+        sensor_msgs::msg::Image>;                      // Segmentation image id
+    std::shared_ptr<message_filters::Synchronizer<SyncPolicy3>> sync3_;
+    std::shared_ptr<message_filters::Synchronizer<SyncPolicy2>> sync2_;
 
     // Publishers
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr seg_image_color_pub_;
@@ -87,7 +96,15 @@ private:
      * This function is triggered when synchronized messages for a depth image,
      * a color image, and a segmentation images are received.
      */
-     void synchronized_callback(
+     void synchronized_callback3(
+        const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_color,
+        const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id,
+        const sensor_msgs::msg::Image::ConstSharedPtr& front_camera_color);
+     void synchronized_callback2(
+        const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_color,
+        const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id);
+     void front_camera_callback(const sensor_msgs::msg::Image::ConstSharedPtr& front_camera_color);
+     void handle_triplet_and_save(
         const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_color,
         const sensor_msgs::msg::Image::ConstSharedPtr& segmentation_image_id,
         const sensor_msgs::msg::Image::ConstSharedPtr& front_camera_color);

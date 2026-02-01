@@ -7,4 +7,8 @@
     segmentation_image_color_sub_topic: "/front_camera_seg/image_color"
     segmentation_image_id_sub_topic:    "/front_camera_seg/image_raw"
     front_camera_color_sub_topic:       "/front_camera/image_color"
+    # If 3-way sync never fires due to timestamp mismatch, set this to false.
+    # sync_with_front_camera: false
+    # sync_queue_size: 20
+    # sync_max_interval_sec: 0.5
     

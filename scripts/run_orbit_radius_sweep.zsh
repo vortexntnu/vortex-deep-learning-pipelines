@@ -25,15 +25,15 @@ BOUNCE_AXIS=true    # if true, Python does ping-pong on the axis
 TRAVERSE_MODE="roundtrip"   # "to_end" | "roundtrip"
 
 # This must match the constant in your Python (SLEEP_TIME = 2)
-SLEEP_TIME=2.0
+SLEEP_TIME=1    # seconds, internal sleep per tick in Python
 
 # Optional small margin after a traverse (seconds), for capture safety
 EXTRA_MARGIN=0.0
 
 # Radius sweep
-RADIUS_START=0.5
-RADIUS_END=6.0
-RADIUS_STEP=0.25
+RADIUS_START=2.5
+RADIUS_END=3.5
+RADIUS_STEP=1
 # ---------------------------------------------------
 
 outline() { echo "[`date +%H:%M:%S`] $*"; }

@@ -68,12 +68,25 @@ Example:
     # camera_rig
     segmentation_image_color_sub_topic: "/front_camera_seg/image_color"
     segmentation_image_id_sub_topic:    "/front_camera_seg/image_raw"
+    front_camera_color_sub_topic:       "/front_camera/image_color"
+
+    # If no images are generated, the most common cause is timestamp mismatch
+    # between the 3 image topics (3-way sync never fires). In that case:
+    # - disable strict front-camera sync, or
+    # - increase the allowed max interval.
+    # sync_with_front_camera: false
+    # sync_queue_size: 20
+    # sync_max_interval_sec: 0.5
 ```
 
 | Parameter                            | Type   | Description                              |
 | ------------------------------------ | ------ | ---------------------------------------- |
 | `segmentation_image_color_sub_topic` | string | Topic name for segmentation color image. |
 | `segmentation_image_id_sub_topic`    | string | Topic name for segmentation ID image.    |
+| `front_camera_color_sub_topic`       | string | Topic name for front camera color image. |
+| `sync_with_front_camera`             | bool   | Use 3-way sync (true) or 2-way + latest front (false). |
+| `sync_queue_size`                    | int    | message_filters queue size.              |
+| `sync_max_interval_sec`              | double | Max allowed timestamp interval for sync. |
 ---
 
 ## Published Topics
