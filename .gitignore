@@ -177,3 +177,15 @@ scripts/objects/
 scripts/object_files/
 
 *.csv
+
+/build
+/install
+/log
+*/results
+/rosbags
+.DS_Store
+/roboflow_data
+
+Pipfile
+Pipfile.lock
+
