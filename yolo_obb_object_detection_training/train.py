@@ -18,7 +18,7 @@ ROBOFLOW_PROJECT = "valve_obb_annotations-ejsa6"
 ROBOFLOW_PROJECT_VERSION = "2"
 
 # Use a pretrained YOLOv26n model to avoid training from scratch.
-MODEL_NAME = "yolo26n-obb.pt"
+MODEL_NAME = "yolo26m-obb.pt"
 
 # Specify the GPU device index to use for training.
 DEVICE = 0
@@ -66,7 +66,7 @@ def main() -> None:
 
     device_str = f"cuda:{DEVICE}" if torch.cuda.is_available() else "cpu"
 
-    model.train(
+    results = model.train(
         data=str(data_yaml_path),
         epochs=200,  # Bump up the number of epochs if necessary
         imgsz=640,
@@ -77,10 +77,12 @@ def main() -> None:
         name=experiment_name,
     )
 
-    # Load the best checkpoint produced during training.
-    best_weights_path = (
-        Path("results") / "yolov26_obb" / experiment_name / "weights" / "best.pt"
-    )
+    save_dir = Path(results.save_dir)
+    best_weights_path = save_dir / "weights" / "best.pt"
+
+    print("Ultralytics saved this run to:", save_dir)
+    print("Looking for best checkpoint at:", best_weights_path)
+
     if not best_weights_path.exists():
         raise FileNotFoundError(
             f"Trained model checkpoint not found at {best_weights_path}. "
