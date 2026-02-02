@@ -2,11 +2,10 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 ALLOWED_DEVICES = ['cpu', '0', 'cuda:0']
 
