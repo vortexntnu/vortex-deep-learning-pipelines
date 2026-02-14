@@ -1,16 +1,20 @@
 yolo_segmentation_node:
   ros__parameters:
     # Node parameters
-    input_topic: "/gripper_camera/image_raw"
+    input_topic: "/cam/image_color"
     output_bbox_topic: "/pipeline/camera/bboxes"
     output_mask_topic: "/pipeline/camera/segmentation_mask"
     debug_topic: "/pipeline/camera/segmentation_debug"
     pub_bbox: True
     pub_mask: True
-    pub_debug: False
+    pub_debug: True
+
+    # Camera info parameters
+    input_camera_info_topic: "/cam/camera_info"
+    output_camera_info_topic: "/pipeline/camera/camera_info"
 
     # Implementation parameters
-    model_path: "/ros2_ws/yolo_segmentation_training/results/pipe_seg_merge_jan_2026-v1-20260122-140625/weights/best.pt"
+    model_path: "/ros2_ws/yolo_segmentation_training/results/yolo26s-seg-pipe_seg_real_and_sim-v1-20260201-170354/weights/yolo26s_v02.pt"
     device: "cpu"
     imgsz: 640
     confidence_threshold: 0.3

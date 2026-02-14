@@ -10,7 +10,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 from rclpy.subscription import Subscription
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Header
 from ultralytics.engine.results import Results
 from vision_msgs.msg import (
@@ -32,6 +32,8 @@ class YoloNodeParams:
     pub_bbox: bool
     pub_mask: bool
     pub_debug: bool
+    input_camera_info_topic: str
+    output_camera_info_topic: str
 
 
 class YoloSegmentationNode(Node):
@@ -46,6 +48,8 @@ class YoloSegmentationNode(Node):
         self._node_params = self.load_node_params()
 
         self._bridge: CvBridge = CvBridge()
+        self._original_camera_info: Optional[CameraInfo] = None
+
         qos_profile = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -53,6 +57,16 @@ class YoloSegmentationNode(Node):
         )
         self._subscription: Subscription = self.create_subscription(
             Image, self._node_params.input_topic, self.image_callback, qos_profile
+        )
+
+        self._camera_info_subscription = self.create_subscription(
+            CameraInfo,
+            self._node_params.input_camera_info_topic,
+            self.camera_info_callback,
+            qos_profile,
+        )
+        self._camera_info_publisher = self.create_publisher(
+            CameraInfo, self._node_params.output_camera_info_topic, qos_profile
         )
 
         if self._node_params.pub_debug:
@@ -74,6 +88,14 @@ class YoloSegmentationNode(Node):
         self.get_logger().info(
             f"Node initialized. Subscribing to '{self._node_params.input_topic}'"
         )
+
+    def camera_info_callback(self, msg: CameraInfo) -> None:
+        """Callback for incoming camera info. Stores the original camera info for scaling.
+
+        Args:
+            msg (sensor_msgs.msg.CameraInfo): Camera info message.
+        """
+        self._original_camera_info = msg
 
     def image_callback(self, msg: Image) -> None:
         """Callback for incoming images. Runs segmentation, publishes results and debug images.
@@ -140,6 +162,66 @@ class YoloSegmentationNode(Node):
         mask_msg.header = header
         self._mask_publisher.publish(mask_msg)
 
+        # Publish scaled camera_info
+        self.publish_camera_info(mask_msg, header)
+
+    def publish_camera_info(self, mask_msg: Image, header: Header) -> None:
+        """Publish scaled camera info matching the mask resolution.
+
+        Args:
+            mask_msg (sensor_msgs.msg.Image): The segmentation mask message.
+            header (std_msgs.msg.Header): Header to use for camera info.
+        """
+        if self._original_camera_info is None:
+            self.get_logger().warn(
+                "Original camera_info not yet received. Skipping camera_info publishing.",
+                throttle_duration_sec=5.0,
+            )
+            return
+
+        mask_width = mask_msg.width
+        mask_height = mask_msg.height
+
+        if mask_width == 0 or mask_height == 0:
+            self.get_logger().warn(
+                f"Invalid mask resolution: {mask_width}x{mask_height}. Skipping camera_info publishing."
+            )
+            return
+
+        # Calculate scaling factors
+        scale_x = float(mask_width) / float(self._original_camera_info.width)
+        scale_y = float(mask_height) / float(self._original_camera_info.height)
+
+        # Create scaled camera info
+        scaled_camera_info = CameraInfo()
+        scaled_camera_info.header = header
+        scaled_camera_info.width = mask_width
+        scaled_camera_info.height = mask_height
+
+        # Scale intrinsic matrix K
+        scaled_camera_info.k = list(self._original_camera_info.k)
+        scaled_camera_info.k[0] = self._original_camera_info.k[0] * scale_x  # fx
+        scaled_camera_info.k[2] = self._original_camera_info.k[2] * scale_x  # cx
+        scaled_camera_info.k[4] = self._original_camera_info.k[4] * scale_y  # fy
+        scaled_camera_info.k[5] = self._original_camera_info.k[5] * scale_y  # cy
+
+        # Copy distortion coefficients (unchanged)
+        scaled_camera_info.d = list(self._original_camera_info.d)
+        scaled_camera_info.distortion_model = self._original_camera_info.distortion_model
+
+        # Copy rectification and projection matrices
+        scaled_camera_info.r = list(self._original_camera_info.r)
+        scaled_camera_info.p = list(self._original_camera_info.p)
+
+        # Scale projection matrix P if present
+        if len(scaled_camera_info.p) >= 12:
+            scaled_camera_info.p[0] = self._original_camera_info.p[0] * scale_x  # fx
+            scaled_camera_info.p[2] = self._original_camera_info.p[2] * scale_x  # cx
+            scaled_camera_info.p[5] = self._original_camera_info.p[5] * scale_y  # fy
+            scaled_camera_info.p[6] = self._original_camera_info.p[6] * scale_y  # cy
+
+        self._camera_info_publisher.publish(scaled_camera_info)
+
     def publish_debug_image(self, result: Results, header: Header) -> None:
         """Publish debug visualization image."""
         debug_img: np.ndarray = self._segmentation.visualize(result)
@@ -160,6 +242,8 @@ class YoloSegmentationNode(Node):
         self.declare_parameter("pub_bbox", Parameter.Type.BOOL)
         self.declare_parameter("pub_mask", Parameter.Type.BOOL)
         self.declare_parameter("pub_debug", Parameter.Type.BOOL)
+        self.declare_parameter("input_camera_info_topic", Parameter.Type.STRING)
+        self.declare_parameter("output_camera_info_topic", Parameter.Type.STRING)
         return YoloNodeParams(
             input_topic=self.get_parameter("input_topic")
             .get_parameter_value()
@@ -176,6 +260,12 @@ class YoloSegmentationNode(Node):
             pub_bbox=self.get_parameter("pub_bbox").get_parameter_value().bool_value,
             pub_mask=self.get_parameter("pub_mask").get_parameter_value().bool_value,
             pub_debug=self.get_parameter("pub_debug").get_parameter_value().bool_value,
+            input_camera_info_topic=self.get_parameter("input_camera_info_topic")
+            .get_parameter_value()
+            .string_value,
+            output_camera_info_topic=self.get_parameter("output_camera_info_topic")
+            .get_parameter_value()
+            .string_value,
         )
 
     def load_params(self) -> YoloSegmentationParams:
