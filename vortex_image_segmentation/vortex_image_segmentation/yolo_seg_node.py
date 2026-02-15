@@ -207,7 +207,9 @@ class YoloSegmentationNode(Node):
 
         # Copy distortion coefficients (unchanged)
         scaled_camera_info.d = list(self._original_camera_info.d)
-        scaled_camera_info.distortion_model = self._original_camera_info.distortion_model
+        scaled_camera_info.distortion_model = (
+            self._original_camera_info.distortion_model
+        )
 
         # Copy rectification and projection matrices
         scaled_camera_info.r = list(self._original_camera_info.r)
