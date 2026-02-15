@@ -11,12 +11,21 @@ yolo_segmentation_node:
 
     # Camera info parameters
     input_camera_info_topic: "/cam/camera_info"
-    output_camera_info_topic: "/pipeline/camera/camera_info"
+    output_camera_info_topic: "/pipeline/camera/camera_info"  # Scaled to match segmentation mask resolution
 
     # Implementation parameters
     model_path: "/ros2_ws/yolo_segmentation_training/results/yolo26s-seg-pipe_seg_real_and_sim-v1-20260201-170354/weights/yolo26s_v02.pt"
     device: "cpu"
+
+    # Image preprocessing (what ultralytics does):
+    # - Resizes image to fit within imgsz x imgsz square (e.g., 640x640)
+    # - Uses letterbox padding to maintain aspect ratio
+    # - For 1440x1080 input → scaled to 640x480, then padded to 640x640
+    # - By default (retina_masks=False), masks are returned at model's internal resolution
+    # - To get masks at original image resolution, set retina_masks=True
+    # - Output mask resolution depends on input aspect ratio + letterbox padding
     imgsz: 640
+
     confidence_threshold: 0.3
     max_detections: 1
     compile: False # Set this to True for faster inference speed
