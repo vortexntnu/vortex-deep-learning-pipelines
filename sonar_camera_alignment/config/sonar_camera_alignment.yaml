@@ -1,0 +1,57 @@
+sonar_camera_alignment_projector:
+    ros__parameters:
+        packet_topic: /synced/seg_depth_packet
+
+        # Base sonar (fan) + metadata
+        sonar_topic: /front_sonar/display_mono
+        sonar_info_topic: /front_sonar/sonar_info
+
+        # Output
+        out_topic: /front_sonar/projected_seg
+
+        # Projection geometry
+        projection_mode: fan
+        horizontal_fov_rad: 2.2689280275926285   # 130 deg
+        invert_range_axis: true
+        invert_angle_axis: false
+
+        # Frame overrides (keep only what you actually need)
+        camera_frame_override: "camera_rig/segmentation_camera_front"
+        sonar_frame_override: "camera_rig/front_fls"
+        depth_frame_override: ""   # REMOVE if param doesn't exist
+
+        # Performance / density
+        sample_step: 1
+
+        # Label filtering (debug: disable single-label to see anything)
+        filter_to_single_label: true
+        target_label_id: 7
+
+        # Debug
+        use_vertical_fov_filter: false
+        refine_with_sonar_intensity: false
+        use_fan_valid_mask: false
+
+sonar_projected_overlay:
+    ros__parameters:
+        sonar_topic: /front_sonar/display_mono
+        projected_topic: /front_sonar/projected_seg
+        overlay_topic: /front_sonar/overlay
+
+        alpha: 0.65
+        dilate_iter: 0
+        colorize_labels: true
+        mask_to_sonar_fan: false
+
+seg_depth_sync:
+    ros__parameters:
+        seg_topic: /front_camera_seg/image_raw
+        depth_topic: /depth_camera/image_depth
+
+        seg_camera_info_topic: /front_camera_seg/camera_info
+        depth_camera_info_topic: /depth_camera/camera_info
+
+        out_topic: /synced/seg_depth_packet
+        sync_queue_size: 400
+        max_sync_interval_s: 5.0
+        max_depth_m: 10.0

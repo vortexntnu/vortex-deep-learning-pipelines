@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>sonar_camera_alignment</name>
+  <version>0.0.1</version>
+  <description>Projects segmentation labels from camera onto Stonefish sonar image plane using TF and depth.</description>
+
+  <maintainer email="liangjiz@ntnu.no">you</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>stonefish_ros2</depend>
+  <depend>vortex_msgs</depend>
+
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+
+  <depend>message_filters</depend>
+  <depend>image_transport</depend>
+  <depend>cv_bridge</depend>
+
+  <depend>opencv</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
