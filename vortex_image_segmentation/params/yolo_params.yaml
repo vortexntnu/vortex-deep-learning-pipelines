@@ -18,12 +18,14 @@ yolo_segmentation_node:
     device: "cpu" # Options: "cpu", "cuda", "cuda:0", "cuda:1", "mps" ++
 
     # Image preprocessing (what ultralytics does):
-    # - Resizes image to fit within imgsz x imgsz square (e.g., 640x640)
-    # - Uses letterbox padding to maintain aspect ratio
-    # - For 1440x1080 input → scaled to 640x480, then padded to 640x640
-    # - By default (retina_masks=False), masks are returned at model's internal resolution
-    # - To get masks at original image resolution, set retina_masks=True
+    # - Resizes image so longest side fits within imgsz (e.g., 640)
+    # - Shorter side scaled proportionally to maintain aspect ratio
+    # - Pads shorter side to nearest multiple of 32 (model stride) using grey pixels
+    # - Example: 1440x1080 input → scaled to 640x480 (no padding, 480 % 32 = 0)
+    # - Example: 1280x1000 input → scaled to 640x500 → padded to 640x512 (500 % 32 = 20)
+    # - By default (retina_masks=False), masks are returned at letterboxed resolution
     # - Output mask resolution depends on input aspect ratio + letterbox padding
+    # - IMPORTANT: Camera info must account for both scaling AND padding offsets
     imgsz: 640
 
     confidence_threshold: 0.3

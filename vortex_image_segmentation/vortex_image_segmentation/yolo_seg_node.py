@@ -168,6 +168,12 @@ class YoloSegmentationNode(Node):
     def publish_camera_info(self, mask_msg: Image, header: Header) -> None:
         """Publish scaled camera info matching the mask resolution.
 
+        This correctly handles YOLO's letterbox padding by:
+        1. Computing the scale factor used by YOLO (based on imgsz)
+        2. Computing the dimensions after scaling but before padding
+        3. Computing the padding offset (letterbox grey bars)
+        4. Applying scale to focal lengths and scale+offset to principal points
+
         Args:
             mask_msg (sensor_msgs.msg.Image): The segmentation mask message.
             header (std_msgs.msg.Header): Header to use for camera info.
@@ -181,6 +187,8 @@ class YoloSegmentationNode(Node):
 
         mask_width = mask_msg.width
         mask_height = mask_msg.height
+        orig_width = self._original_camera_info.width
+        orig_height = self._original_camera_info.height
 
         if mask_width == 0 or mask_height == 0:
             self.get_logger().warn(
@@ -188,9 +196,20 @@ class YoloSegmentationNode(Node):
             )
             return
 
-        # Calculate scaling factors
-        scale_x = float(mask_width) / float(self._original_camera_info.width)
-        scale_y = float(mask_height) / float(self._original_camera_info.height)
+        # Calculate the scale factor YOLO uses (fits longest side to imgsz)
+        scale = min(
+            float(self._params.imgsz) / float(orig_width),
+            float(self._params.imgsz) / float(orig_height),
+        )
+
+        # Calculate dimensions after scaling but BEFORE letterbox padding
+        scaled_width = orig_width * scale
+        scaled_height = orig_height * scale
+
+        # Calculate letterbox padding (grey bars added to reach mask dimensions)
+        # Padding is split evenly on both sides
+        pad_width = (mask_width - scaled_width) / 2.0
+        pad_height = (mask_height - scaled_height) / 2.0
 
         # Create scaled camera info
         scaled_camera_info = CameraInfo()
@@ -199,11 +218,16 @@ class YoloSegmentationNode(Node):
         scaled_camera_info.height = mask_height
 
         # Scale intrinsic matrix K
+        # Focal lengths are scaled, principal points are scaled AND offset by padding
         scaled_camera_info.k = list(self._original_camera_info.k)
-        scaled_camera_info.k[0] = self._original_camera_info.k[0] * scale_x  # fx
-        scaled_camera_info.k[2] = self._original_camera_info.k[2] * scale_x  # cx
-        scaled_camera_info.k[4] = self._original_camera_info.k[4] * scale_y  # fy
-        scaled_camera_info.k[5] = self._original_camera_info.k[5] * scale_y  # cy
+        scaled_camera_info.k[0] = self._original_camera_info.k[0] * scale  # fx
+        scaled_camera_info.k[2] = (
+            self._original_camera_info.k[2] * scale
+        ) + pad_width  # cx
+        scaled_camera_info.k[4] = self._original_camera_info.k[4] * scale  # fy
+        scaled_camera_info.k[5] = (
+            self._original_camera_info.k[5] * scale
+        ) + pad_height  # cy
 
         # Copy distortion coefficients (unchanged)
         scaled_camera_info.d = list(self._original_camera_info.d)
@@ -211,16 +235,21 @@ class YoloSegmentationNode(Node):
             self._original_camera_info.distortion_model
         )
 
-        # Copy rectification and projection matrices
+        # Copy rectification matrix (unchanged)
         scaled_camera_info.r = list(self._original_camera_info.r)
-        scaled_camera_info.p = list(self._original_camera_info.p)
 
         # Scale projection matrix P if present
+        # P has similar structure to K but is 3x4
+        scaled_camera_info.p = list(self._original_camera_info.p)
         if len(scaled_camera_info.p) >= 12:
-            scaled_camera_info.p[0] = self._original_camera_info.p[0] * scale_x  # fx
-            scaled_camera_info.p[2] = self._original_camera_info.p[2] * scale_x  # cx
-            scaled_camera_info.p[5] = self._original_camera_info.p[5] * scale_y  # fy
-            scaled_camera_info.p[6] = self._original_camera_info.p[6] * scale_y  # cy
+            scaled_camera_info.p[0] = self._original_camera_info.p[0] * scale  # fx
+            scaled_camera_info.p[2] = (
+                self._original_camera_info.p[2] * scale
+            ) + pad_width  # cx
+            scaled_camera_info.p[5] = self._original_camera_info.p[5] * scale  # fy
+            scaled_camera_info.p[6] = (
+                self._original_camera_info.p[6] * scale
+            ) + pad_height  # cy
 
         self._camera_info_publisher.publish(scaled_camera_info)
 
