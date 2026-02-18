@@ -8,8 +8,6 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
-
-
 def validate_device(device: str):
     if device in ("cpu", "cuda", "mps"):
         return
@@ -24,6 +22,7 @@ def validate_device(device: str):
         f"Invalid device '{device}'. Use 'cpu', GPU index (0,1,...), "
         "'cuda', 'cuda:N', or 'mps'."
     )
+
 
 def launch_setup(context, *args, **kwargs):
     device = LaunchConfiguration('device').perform(context)

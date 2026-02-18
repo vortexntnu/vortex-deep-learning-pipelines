@@ -2,12 +2,10 @@
 import os
 
 import rclpy
-from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
-
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
-
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
 from vision_msgs.msg import (
     BoundingBox2D,
@@ -45,9 +43,7 @@ class YoloObjectDetection(Node):
             Image, self.image_topic, self.on_image, qos_profile_sensor_data
         )
 
-        self.pub_dets = self.create_publisher(
-            Detection2DArray, self.dets_topic, 10
-        )
+        self.pub_dets = self.create_publisher(Detection2DArray, self.dets_topic, 10)
 
         self.pub_annot = self.create_publisher(
             Image, self.annot_topic, qos_profile_sensor_data
