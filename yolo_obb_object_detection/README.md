@@ -11,7 +11,7 @@ You can also select the compute device with the `device` argument:
 ros2 launch yolo_obb_object_detection yolo_obb_object_detection.launch.py device:=cpu
 
 # Run inference on GPU 0
-ros2 launch yolo_obb_object_detection yolo_obb_object_detection.launch.py  device:=0
+ros2 launch yolo_obb_object_detection yolo_obb_object_detection.launch.py device:=0
 ```
 **By default, the node runs on CPU.**
 
