@@ -21,20 +21,32 @@ class YoloObjectDetection(Node):
     def __init__(self):
         super().__init__("yolo_obb_object_detection")
 
-        self.declare_parameter("yolo_model", "")
-        self.declare_parameter("model_conf", 0.25)
-        self.declare_parameter("color_image_sub_topic", "/image")
-        self.declare_parameter("yolo_detections_pub_topic", "/detections")
-        self.declare_parameter("yolo_annotated_pub_topic", "/annotated")
-        self.declare_parameter("device", "cpu")
+        param_declarations = [
+            ("yolo_model", ""),
+            ("model_conf", 0.25),
+            ("color_image_sub_topic", "/image"),
+            ("yolo_detections_pub_topic", "/detections"),
+            ("yolo_annotated_pub_topic", "/annotated"),
+            ("device", "cpu"),
+        ]
 
-        self.model_name = self.get_parameter("yolo_model").value
-        self.conf = self.get_parameter("model_conf").value
-        self.image_topic = self.get_parameter("color_image_sub_topic").value
-        self.dets_topic = self.get_parameter("yolo_detections_pub_topic").value
-        self.annot_topic = self.get_parameter("yolo_annotated_pub_topic").value
-        self.device = self.get_parameter("device").value
+        # Declare all parameters in a single, structured call.
+        self.declare_parameters("", param_declarations)
 
+        # Map parameter names to attribute names for consistency with the rest of the node.
+        param_attr_map = {
+            "yolo_model": "model_name",
+            "model_conf": "conf",
+            "color_image_sub_topic": "image_topic",
+            "yolo_detections_pub_topic": "dets_topic",
+            "yolo_annotated_pub_topic": "annot_topic",
+            "device": "device",
+        }
+
+        params = self.get_parameters([name for name, _ in param_declarations])
+        for param in params:
+            attr_name = param_attr_map.get(param.name, param.name)
+            setattr(self, attr_name, param.value)
         self.model = self._load_model()
 
         self.bridge = CvBridge()
