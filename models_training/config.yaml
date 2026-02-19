@@ -1,0 +1,56 @@
+run:
+  mode: "local" # "local" or "slurm"
+  task: "obb" # "segmentation", "detection", or "obb"
+  output_dir: "results"
+  train_script: "train.py"
+
+slurm:
+  account: "my_account"
+  partition: "gpu"
+  gpus: 1
+  cpus: 8
+  mem: "32G"
+  time: "24:00:00"
+  job_name: "yolo-train"
+  venv_path: "~/venvs/yolo"
+
+models:
+
+  segmentation:
+    roboflow:
+      workspace_id: "hei-qp1ee"
+      project_id: "pipe_seg_merge_jan_2026"
+      version: 1
+      dataset_format: "yolo26"
+    model: "yolo26s-seg.pt"
+    epochs: 100
+    batch: -1
+    imgsz: 640
+    patience: 30
+    requirements: "requirements-segmentation.txt"
+
+  detection:
+    roboflow:
+      workspace_id: "hei-qp1ee"
+      project_id: "simulatorvalve-4rcbu"
+      version: 1
+      dataset_format: "yolov8"
+    model: "yolov8m.pt"
+    epochs: 200
+    batch: -1
+    imgsz: 640
+    patience: 30
+    requirements: "requirements-detection.txt"
+
+  obb:
+    roboflow:
+      workspace_id: "hei-qp1ee"
+      project_id: "valve_obb_annotations-ejsa6"
+      version: 2
+      dataset_format: "yolov8"
+    model: "yolo26m-obb.pt"
+    epochs: 200
+    batch: -1
+    imgsz: 640
+    patience: 30
+    requirements: "requirements-obb.txt"
