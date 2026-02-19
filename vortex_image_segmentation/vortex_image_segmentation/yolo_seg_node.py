@@ -311,6 +311,7 @@ class YoloSegmentationNode(Node):
         self.declare_parameter("max_detections", Parameter.Type.INTEGER)
         self.declare_parameter("imgsz", Parameter.Type.INTEGER)
         self.declare_parameter("compile", Parameter.Type.BOOL)
+        self.declare_parameter("verbose", Parameter.Type.BOOL)
         return YoloSegmentationParams(
             device=self.get_parameter("device").get_parameter_value().string_value,
             model_path=self.get_parameter("model_path")
@@ -324,6 +325,7 @@ class YoloSegmentationNode(Node):
             .integer_value,
             imgsz=self.get_parameter("imgsz").get_parameter_value().integer_value,
             compile=self.get_parameter("compile").get_parameter_value().bool_value,
+            verbose=self.get_parameter("verbose").get_parameter_value().bool_value,
         )
 
 
