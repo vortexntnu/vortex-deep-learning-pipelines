@@ -47,9 +47,9 @@ class YoloObjectDetection(Node):
         for param in params:
             attr_name = param_attr_map.get(param.name, param.name)
             setattr(self, attr_name, param.value)
-        self.model = self._load_model()
-
         self.bridge = CvBridge()
+
+        self.model = self._load_model()
 
         self.sub = self.create_subscription(
             Image, self.image_topic, self.on_image, qos_profile_sensor_data
@@ -63,13 +63,19 @@ class YoloObjectDetection(Node):
 
     def _load_model(self):
         share = get_package_share_directory("yolo_obb_object_detection")
-        model_path = os.path.join(share, "model", self.model_name)
+        default_model = os.path.join(share, "model", self.model_name)
 
-        if not os.path.isfile(model_path):
-            raise FileNotFoundError(f"Model not found: {model_path}")
+        mp = os.path.expanduser(default_model)
 
-        self.get_logger().info(f"Loading model: {model_path}")
-        return yolo_utils.load_model(model_path, self.conf)
+        if not os.path.isabs(mp):
+            mp = os.path.join(share, mp)
+
+        if not os.path.isfile(mp):
+            self.get_logger().error(f"Model not found: {mp}")
+            raise FileNotFoundError(mp)
+
+        self.get_logger().info(f"Loading model: {mp}")
+        return yolo_utils.load_model(mp, self.conf)
 
     def on_image(self, msg: Image):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
