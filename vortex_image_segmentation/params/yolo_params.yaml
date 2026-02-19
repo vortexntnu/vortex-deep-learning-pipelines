@@ -15,7 +15,7 @@ yolo_segmentation_node:
 
     # Implementation parameters
     model_path: "/ros2_ws/yolo_segmentation_training/results/yolo26s-seg-pipe_seg_real_and_sim-v1-20260201-170354/weights/yolo26s_v02.pt"
-    device: "cpu" # Options: "cpu", "cuda", "cuda:0", "cuda:1", "mps" ++
+    device: "cuda" # Options: "cpu", "cuda", "cuda:0", "cuda:1", "mps" ++
 
     # Image preprocessing (what ultralytics does):
     # - Resizes image so longest side fits within imgsz (e.g., 640)
