@@ -24,30 +24,21 @@ def validate_config(cfg):
 def run_local(cfg):
     print("Running locally")
 
-    task = cfg["run"]["task"]
-    req = cfg["models"][task].get("requirements")
-
-    if req:
-        print(f"Installing requirements from {req}")
-        subprocess.run(["pip", "install", "-r", req], check=True)
-        subprocess.run(["pip", "install", "-r", "requirements-local.txt"], check=True)
-
     subprocess.run(
         ["python3", cfg["run"]["train_script"], "--config", CONFIG_PATH],
         check=True,
     )
 
+
 def submit_slurm(cfg):
     print("Submitting Slurm job")
+
+    venv = ensure_venv(cfg)
 
     Path("logs").mkdir(exist_ok=True)
 
     template = Path(TEMPLATE_PATH).read_text()
     s = cfg["slurm"]
-
-    # Model-specific stuff
-    model_cfg = cfg["models"][cfg["run"]["task"]]
-    requirements = model_cfg.get("requirements", "")
 
     script = template.format(
         job_name=s.get("job_name", "yolo-train"),
@@ -58,21 +49,32 @@ def submit_slurm(cfg):
         cpus=s.get("cpus", 8),
         mem=s.get("mem", "32G"),
         time=s.get("time", "1:00:00"),
-
-        # GPU settings
         gpu_type=s.get("gpu_type", "a100"),
         gpus=s.get("gpus", 1),
         constraint=s.get("constraint", ""),
-
-        # Training
         train_script=cfg["run"]["train_script"],
         config=CONFIG_PATH,
-        requirements=requirements,
+        venv_path=str(venv.resolve()),
     )
 
     Path("job.slurm").write_text(script)
 
     subprocess.run(["sbatch", "job.slurm"], check=True)
+
+
+def ensure_venv(cfg):
+    task = cfg["run"]["task"]
+    req = cfg["models"][task]["requirements"]
+
+    venv = Path("venvs") / task
+
+    if not (venv / "bin/python").exists():
+        print(f"Creating venv for {task}")
+        subprocess.run(["bash", "setup_venv.sh", task, req], check=True)
+    else:
+        print(f"Using existing venv: {venv}")
+
+    return venv
 
 
 def main():

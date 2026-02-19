@@ -1,6 +1,6 @@
 run:
-  mode: "slurm" # "local" or "slurm"
-  task: "obb" # "segmentation", "detection", or "obb"
+  mode: "local" # "local" or "slurm"
+  task: "detection" # "segmentation", "detection", or "obb"
   output_dir: "results"
   train_script: "train.py"
 

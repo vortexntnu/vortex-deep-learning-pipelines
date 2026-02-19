@@ -197,3 +197,6 @@ roboflow_data/
 
 # Mac
 .DS_Store
+
+#
+venvs/
