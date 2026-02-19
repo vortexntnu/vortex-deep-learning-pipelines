@@ -30,12 +30,12 @@ def run_local(cfg):
     if req:
         print(f"Installing requirements from {req}")
         subprocess.run(["pip", "install", "-r", req], check=True)
+        subprocess.run(["pip", "install", "-r", "requirements-local.txt"], check=True)
 
     subprocess.run(
         ["python3", cfg["run"]["train_script"], "--config", CONFIG_PATH],
         check=True,
     )
-
 
 def submit_slurm(cfg):
     print("Submitting Slurm job")
@@ -45,22 +45,33 @@ def submit_slurm(cfg):
     template = Path(TEMPLATE_PATH).read_text()
     s = cfg["slurm"]
 
-    requirements = cfg["models"][cfg["run"]["task"]].get("requirements", "")
+    # Model-specific stuff
+    model_cfg = cfg["models"][cfg["run"]["task"]]
+    requirements = model_cfg.get("requirements", "")
 
     script = template.format(
-        job_name=s["job_name"],
-        partition=s["partition"],
-        gpus=s["gpus"],
-        cpus=s["cpus"],
-        mem=s["mem"],
-        time=s["time"],
-        venv_path=s["venv_path"],
+        job_name=s.get("job_name", "yolo-train"),
+        account=s.get("account", ""),
+        partition=s.get("partition", "GPUQ"),
+        nodes=s.get("nodes", 1),
+        ntasks=s.get("ntasks", 1),
+        cpus=s.get("cpus", 8),
+        mem=s.get("mem", "32G"),
+        time=s.get("time", "1:00:00"),
+
+        # GPU settings
+        gpu_type=s.get("gpu_type", "a100"),
+        gpus=s.get("gpus", 1),
+        constraint=s.get("constraint", ""),
+
+        # Training
         train_script=cfg["run"]["train_script"],
         config=CONFIG_PATH,
         requirements=requirements,
     )
 
     Path("job.slurm").write_text(script)
+
     subprocess.run(["sbatch", "job.slurm"], check=True)
 
 

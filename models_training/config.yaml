@@ -1,18 +1,21 @@
 run:
-  mode: "local" # "local" or "slurm"
+  mode: "slurm" # "local" or "slurm"
   task: "obb" # "segmentation", "detection", or "obb"
   output_dir: "results"
   train_script: "train.py"
 
 slurm:
-  account: "my_account"
-  partition: "gpu"
+  account: "studiegrupper-vortex"
+  partition: "GPUQ"
   gpus: 1
+  gpu_type: "a100"
+  constraint: "gpu40g|gpu80g|gpu32g"
   cpus: 8
   mem: "32G"
-  time: "24:00:00"
+  time: "1:00:00"
   job_name: "yolo-train"
-  venv_path: "~/venvs/yolo"
+  nodes: 1
+  ntasks: 1
 
 models:
 

@@ -1,19 +1,23 @@
 #!/bin/bash
 #SBATCH --job-name={job_name}
-#SBATCH --output=logs/%x-%j.out
+#SBATCH --account={account}
 #SBATCH --partition={partition}
-#SBATCH --gres=gpu:{gpus}
-#SBATCH --cpus-per-task={cpus}
-#SBATCH --mem={mem}
 #SBATCH --time={time}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks={ntasks}
+#SBATCH --cpus-per-task={cpus}
+#SBATCH --gres=gpu:{gpu_type}:{gpus}
+#SBATCH --constraint="{constraint}"
+#SBATCH --mem={mem}
+#SBATCH --output=%x_%j.out
 
 set -e
 
 echo "Running on $(hostname)"
 echo "CUDA devices: $CUDA_VISIBLE_DEVICES"
 
-source {venv_path}/bin/activate
-
+module purge
+module load PyTorch/2.1.2-foss-2023a-CUDA-12.1.1
 pip install -r {requirements}
 
 python {train_script} --config {config}
