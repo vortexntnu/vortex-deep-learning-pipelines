@@ -208,8 +208,8 @@ class YoloSegmentationNode(Node):
 
         # Calculate letterbox padding (grey bars added to reach mask dimensions)
         # Padding is split evenly on both sides
-        pad_width = (mask_width - scaled_width) / 2.0
-        pad_height = (mask_height - scaled_height) / 2.0
+        pad_width = round((mask_width - scaled_width) / 2)
+        pad_height = round((mask_height - scaled_height) / 2)
 
         # Create scaled camera info
         scaled_camera_info = CameraInfo()
