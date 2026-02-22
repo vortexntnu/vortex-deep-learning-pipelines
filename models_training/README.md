@@ -167,3 +167,68 @@ Run segmentation on Slurm:
 ```bash
 python3 run.py --mode slurm --task segmentation
 ```
+
+# Checking SLurm Jobs
+
+After submitting a job like:
+
+```bash
+python3 run.py
+Submitted batch job 24063371
+```
+
+For each job, set the job ID (to debug it more easily):
+```bash
+export SLURM_JOB=
+```
+
+Now you can copy-paste the commands below.
+
+## Check if job is running or pending
+
+```bash
+squeue -u $USER
+```
+
+Check a specific job:
+
+```bash
+squeue -j $SLURM_JOB
+```
+
+## See detailed job info
+
+```bash
+scontrol show job $SLURM_JOB
+```
+
+Shows:
+- allocated GPU/CPU
+- node name
+- job state
+- memory request
+
+## Watch job log live
+Find log file:
+```bash
+ls *$SLURM_JOB*.out
+```
+
+Watch it update:
+```bash
+tail -f *$SLURM_JOB*.out
+```
+
+## Check finished job stats
+
+```bash
+sacct -j $SLURM_JOB --format=JobID,State,Elapsed,MaxRSS,AllocGRES
+```
+
+Shows runtime, memory usage, GPU usage.
+
+## Cancel a job
+
+```bash
+scancel $SLURM_JOB
+```

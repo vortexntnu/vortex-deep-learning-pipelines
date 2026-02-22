@@ -113,7 +113,6 @@ def train(config_path):
         device=device,
         project=config["run"]["output_dir"],
         name=run_name,
-        workers=model_cfg["workers"],
     )
 
     model.val()

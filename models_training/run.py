@@ -33,9 +33,6 @@ def install_requirements(cfg):
 
     cmd = ["python3", "-m", "pip", "install", "-r", req_file]
 
-    if mode == "slurm":
-        cmd.insert(4, "--user")
-
     subprocess.run(cmd, check=True)
 
 
@@ -60,8 +57,13 @@ def submit_slurm(cfg):
 
     req_file = get_requirements(cfg)
 
+    task = cfg["run"]["task"]
+    model_name = Path(cfg["models"][task]["model"]).stem
+
+    job_name = f"{task}-{model_name}"
+
     script = template.format(
-        job_name=s["job_name"],
+        job_name=job_name,
         account=s["account"],
         partition=s["partition"],
         nodes=s["nodes"],
