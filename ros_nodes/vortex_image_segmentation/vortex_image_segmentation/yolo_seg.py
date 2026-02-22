@@ -21,6 +21,7 @@ class YoloSegmentationParams:
     max_detections: int
     imgsz: int
     compile: bool
+    verbose: bool
 
 
 class YoloSegmentation:
@@ -59,6 +60,7 @@ class YoloSegmentation:
             device=torch.device(self._params.device),
             max_det=self._params.max_detections,
             compile=self._params.compile,
+            verbose=self._params.verbose,
         )
         return results
 
