@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 from pathlib import Path
+
 import yaml
 
 CONFIG_PATH = "config.yaml"
