@@ -48,34 +48,12 @@ def download_dataset(rf_cfg):
 
 
 def fix_data_yaml(path):
-    """Fix incorrect dataset paths inside a Roboflow-exported YOLO `data.yaml`.
+    """Fix dataset paths in Roboflow YOLO `data.yaml`.
 
-    Why this is needed
-    ------------------
-    Roboflow sometimes exports `data.yaml` with paths that include the dataset
-    folder name (e.g. `roboflow_data/project-v1/train/images`). However, YOLO
-    interprets paths relative to the directory containing `data.yaml`. If the
-    dataset is already inside `roboflow_data/project-v1/`, this results in
-    duplicated paths like:
-
-        roboflow_data/project-v1/roboflow_data/project-v1/train/images
-
-    which do not exist, causing training to fail with "images not found".
-
-    What this function does
-    -----------------------
-    It rewrites the `data.yaml` file so dataset paths become relative, e.g.:
-
-        roboflow_data/project-v1/train/images  ->  train/images
-        ../test/images                         ->  test/images
-
-    This matches YOLO's expected directory structure and prevents dataset
-    path errors without needing to manually edit the exported dataset.
-
-    Notes:
-    -----
-    - Safe to run multiple times (idempotent).
-    - Only modifies path strings inside `data.yaml`.
+    Roboflow sometimes exports absolute/duplicated paths like
+    `roboflow_data/project-v1/train/images`, but YOLO expects paths
+    relative to `data.yaml`. This function rewrites them to
+    `train/images`, `valid/images`, etc.
     """
     txt = Path(path).read_text()
 
