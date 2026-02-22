@@ -1,59 +1,64 @@
 run:
   mode: "local" # "local" or "slurm"
-  task: "detection" # "segmentation", "detection", or "obb"
-  output_dir: "results"
-  train_script: "train.py"
+  task: "segmentation" # "segmentation", "detection", or "obb"
+  output_dir: "results" # where training outputs/logs go
+  train_script: "train.py" # training entry script
 
 slurm:
-  account: "studiegrupper-vortex"
-  partition: "GPUQ"
-  gpus: 1
-  gpu_type: "a100"
-  constraint: "gpu40g|gpu80g|gpu32g"
-  cpus: 8
-  mem: "32G"
-  time: "1:00:00"
-  job_name: "yolo-train"
-  nodes: 1
-  ntasks: 1
+  account: "studiegrupper-vortex" # Slurm account name
+  partition: "GPUQ" # queue/partition to use
+  gpus: 1 # number of GPUs
+  gpu_type: "a100" # requested GPU model
+  constraint: "gpu40g|gpu80g|gpu32g" # allowed GPU memory types
+  cpus: 12 # CPU cores allocated, should be the same as `workers` in model config
+  mem: "16G" # RAM allocated
+  time: "1:00:00" # job time limit
+  job_name: "yolo-train" # job label in Slurm
+  nodes: 1 # number of nodes
+  ntasks: 1 # tasks per job
 
 models:
-
   segmentation:
     roboflow:
-      workspace_id: "hei-qp1ee"
-      project_id: "pipe_seg_merge_jan_2026"
-      version: 1
-      dataset_format: "yolo26"
-    model: "yolo26s-seg.pt"
-    epochs: 100
-    batch: -1
-    imgsz: 640
-    patience: 30
-    requirements: "requirements-segmentation.txt"
+      workspace_id: "hei-qp1ee" # Roboflow workspace ID
+      project_id: "pipe_seg_merge_jan_2026" # dataset project
+      version: 1 # dataset version
+      dataset_format: "yolo26" # export format
+    model: "yolo26s-seg.pt" # pretrained model file
+    epochs: 100 # training epochs
+    batch: -1 # auto batch size
+    imgsz: 640 # image resolution
+    patience: 30 # early-stop patience
+    requirements: "requirements.txt" # dependency file
+    workers: 12 # CPU dataloader workers
+    export: ["onnx"] # export trained model (onnx, engine, torchscript etc.)
 
   detection:
     roboflow:
-      workspace_id: "hei-qp1ee"
-      project_id: "simulatorvalve-4rcbu"
-      version: 1
-      dataset_format: "yolov8"
-    model: "yolov8m.pt"
-    epochs: 200
-    batch: -1
-    imgsz: 640
-    patience: 30
-    requirements: "requirements-detection.txt"
+      workspace_id: "hei-qp1ee" # Roboflow workspace
+      project_id: "simulatorvalve-4rcbu" # dataset project
+      version: 1 # dataset version
+      dataset_format: "yolov26" # export format
+    model: "yolov26m.pt" # pretrained model file
+    epochs: 200 # training epochs
+    batch: -1 # auto batch size
+    imgsz: 640 # image resolution
+    patience: 30 # early-stop patience
+    requirements: "requirements.txt" # dependency file
+    workers: 12 # CPU dataloader workers
+    export: ["onnx"] # export trained model (onnx, engine, torchscript etc.)
 
   obb:
     roboflow:
-      workspace_id: "hei-qp1ee"
-      project_id: "valve_obb_annotations-ejsa6"
-      version: 2
-      dataset_format: "yolov8"
-    model: "yolo26m-obb.pt"
-    epochs: 200
-    batch: -1
-    imgsz: 640
-    patience: 30
-    requirements: "requirements-obb.txt"
+      workspace_id: "hei-qp1ee" # Roboflow workspace
+      project_id: "valve_obb_annotations-ejsa6" # dataset project
+      version: 2 # dataset version
+      dataset_format: "yolov26" # export format
+    model: "yolo26m-obb.pt" # pretrained model file
+    epochs: 200 # training epochs
+    batch: -1 # auto batch size
+    imgsz: 640 # image resolution
+    patience: 30 # early-stop patience
+    requirements: "requirements.txt" # dependency file
+    workers: 12 # CPU dataloader workers
+    export: ["onnx"] # export trained model (onnx, engine, torchscript etc.)

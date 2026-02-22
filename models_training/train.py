@@ -78,9 +78,13 @@ def fix_data_yaml(path):
     - Only modifies path strings inside `data.yaml`.
     """
     txt = Path(path).read_text()
+
+    txt = txt.replace("roboflow_data/", "")
+    txt = txt.replace("../", "")
+
     base = Path(path).parent.name
     txt = txt.replace(f"{base}/", "")
-    txt = txt.replace("../", "")
+
     Path(path).write_text(txt)
 
 
@@ -109,9 +113,16 @@ def train(config_path):
         device=device,
         project=config["run"]["output_dir"],
         name=run_name,
+        workers=model_cfg["workers"],
     )
 
     model.val()
+
+    export_formats = model_cfg.get("export", [])
+    if export_formats:
+        print(f"Exporting model to formats: {export_formats}")
+        for fmt in export_formats:
+            model.export(format=fmt)
 
 
 if __name__ == "__main__":

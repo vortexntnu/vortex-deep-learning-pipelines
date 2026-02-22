@@ -19,6 +19,8 @@ echo "CUDA devices: $CUDA_VISIBLE_DEVICES"
 module purge
 module load PyTorch/2.1.2-foss-2023a-CUDA-12.1.1
 
-source {venv_path}/bin/activate
+echo "Installing requirements"
+python3 -m pip install --user -r {requirements}
 
-python {train_script} --config {config}
+echo "Starting training"
+python3 {train_script} --config {config}
