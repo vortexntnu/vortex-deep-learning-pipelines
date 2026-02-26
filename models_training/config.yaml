@@ -50,7 +50,7 @@ models:
       workspace_id: "hei-qp1ee" # Roboflow workspace
       project_id: "valve_obb_annotations-ejsa6" # dataset project
       version: 2 # dataset version
-      dataset_format: "yolov26" # export format
+      dataset_format: "yolo26" # export format
     model: "yolo26m-obb.pt" # pretrained model file
     epochs: 200 # training epochs
     batch: -1 # auto batch size
