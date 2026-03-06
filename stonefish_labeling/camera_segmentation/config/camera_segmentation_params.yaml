@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    segmentation_image_sub_topic: "/front_camera_seg/image_color"
+    color_image_sub_topic:    "/front_camera/image_color"
+    output_dir: /home/jorgen/ros2_ws/src/vortex-deep-learning-pipelines/stonefish_labeling/camera_segmentation/resources
+    sync_tolerance_ms: 100 # Timestamps of the two topics from stonefish are not perfectly synced.
+                          # This sets the max allowed time offset between the two topics.
