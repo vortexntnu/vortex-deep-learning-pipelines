@@ -1,0 +1,17 @@
+/**:
+  ros__parameters:
+
+    topic:
+      sonar_sub_topic: "/forward_looking_sonar/display_mono"
+      segmentation_image_sub_topic: "/front_camera_seg/image_color"
+      segmentation_camera_info_topic: "/front_camera_seg/camera_info"
+      color_image_sub_topic:    "/cam/image_color"
+      depth_image_sub_topic:    "/depth_camera/image_depth"
+
+    service:
+      respawn_service: "/stonefish_ros2/respawn_robot"
+
+    data_format:
+      fov: 120.0 # Field of view of the sonar and camera in degrees.
+      sonar_range: 20.0 # Maximum range of the sonar in meters.
+      output_frame_id: "/base_link" # Frame ID for output point cloud (change to match your TF tree)

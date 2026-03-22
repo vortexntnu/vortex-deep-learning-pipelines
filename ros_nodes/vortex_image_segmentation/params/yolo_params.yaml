@@ -1,7 +1,7 @@
 yolo_segmentation_node:
   ros__parameters:
     # Node parameters
-    input_topic: "/cam/image_color"
+    input_topic: "/orca/fls_image/display_mono"
     output_bbox_topic: "/pipeline/camera/bboxes"
     output_mask_topic: "/pipeline/camera/segmentation_mask"
     debug_topic: "/pipeline/camera/segmentation_debug"
@@ -10,11 +10,12 @@ yolo_segmentation_node:
     pub_debug: True
 
     # Camera info parameters
-    input_camera_info_topic: "/cam/camera_info"
-    output_camera_info_topic: "/pipeline/camera/camera_info"  # Scaled to match segmentation mask resolution
+    sonar_input: true # False if input is camera image, True if sonar image
+    input_info_topic: "/orca/fls/sonar_info"
+    output_info_topic: "/pipeline/sonar/sonar_info" # Scaled to match segmentation mask resolution
 
     # Implementation parameters
-    model_path: "/ros2_ws/yolo_segmentation_training/results/yolo26s-seg-pipe_seg_real_and_sim-v1-20260201-170354/weights/yolo26s_v02.pt"
+    model_path: "/home/eirisak/ros2_ws/models/sonar_simulator_best.pt"
     device: "cuda" # Options: "cpu", "cuda", "cuda:0", "cuda:1", "mps" ++
 
     # Image preprocessing (what ultralytics does):
