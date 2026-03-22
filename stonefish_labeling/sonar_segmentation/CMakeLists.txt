@@ -17,6 +17,7 @@ find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(stonefish_ros2 REQUIRED)
 find_package(vortex_utils REQUIRED)
+find_package(vortex_msgs REQUIRED)
 
 include_directories(
   include
@@ -35,6 +36,7 @@ ament_target_dependencies(
   cv_bridge
   stonefish_ros2
   vortex_utils
+  vortex_msgs
 )
 
 target_link_libraries(
