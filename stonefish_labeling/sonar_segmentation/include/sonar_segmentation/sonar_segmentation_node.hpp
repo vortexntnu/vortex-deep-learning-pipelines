@@ -43,7 +43,6 @@ private:
 
     // Timers
     rclcpp::TimerBase::SharedPtr respawn_timer_;
-    double rotando = 0;
 
     // Publisher
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr output_overlay_pub_;

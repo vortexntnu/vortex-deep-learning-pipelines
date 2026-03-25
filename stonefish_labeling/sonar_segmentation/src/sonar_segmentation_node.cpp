@@ -22,24 +22,17 @@ void SonarSegmentationNode::declare_parameters() {
 
     this->declare_parameter<double>("data_format.fov");
     this->declare_parameter<double>("data_format.sonar_range");
-    this->declare_parameter<std::string>("data_format.output_frame_id");
 
     fov_ =
         this->get_parameter("data_format.fov").as_double();
 
     sonar_range_ =
         this->get_parameter("data_format.sonar_range").as_double();
-
-    output_frame_id_ =
-        this->get_parameter("data_format.output_frame_id").as_string();
 }
 
 void SonarSegmentationNode::setup_publishers_and_subscribers() {
     auto sonar_topic =
         this->get_parameter("topic.sonar_sub_topic").as_string();
-
-    auto sonar_info_topic =
-        this->get_parameter("topic.sonar_info_topic").as_string();
 
     auto segmentation_topic =
         this->get_parameter("topic.segmentation_image_sub_topic").as_string();
@@ -120,8 +113,6 @@ void SonarSegmentationNode::callRespawnService() {
     request->origin.position.y = disty(gen);
     request->origin.position.z = -request->origin.position.y/9.0 + 5.5;
 
-    rotando += 90.0;
-
     Eigen::Quaterniond q = vortex::utils::math::euler_to_quat(-95.0 * M_PI/180.0, 0.0, distyaw(gen)*M_PI/180.0);
     request->origin.orientation.x = q.x();
     request->origin.orientation.y = q.y();
@@ -195,7 +186,6 @@ void SonarSegmentationNode::process()
     cv::Mat output_overlay = sonar_img_.clone();
 
     int width = segmentation_img_.cols;
-    int height = segmentation_img_.rows;
 
     int sonar_center_x = output.cols / 2;
     int sonar_center_y = output.rows;
