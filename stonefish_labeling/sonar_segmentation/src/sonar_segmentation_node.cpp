@@ -1,5 +1,6 @@
 #include "sonar_segmentation/sonar_segmentation_node.hpp"
 #include <random>
+#include <vortex/utils/ros/qos_profiles.hpp>
 
 namespace vortex::sonar_segmentation {
 
@@ -14,6 +15,7 @@ SonarSegmentationNode::SonarSegmentationNode()
 
 void SonarSegmentationNode::declare_parameters() {
     this->declare_parameter<std::string>("topic.sonar_sub_topic");
+    this->declare_parameter<std::string>("topic.sonar_info_sub_topic");
     this->declare_parameter<std::string>("topic.segmentation_image_sub_topic");
     this->declare_parameter<std::string>("topic.depth_image_sub_topic");
     this->declare_parameter<std::string>("topic.segmentation_camera_info_topic");
@@ -43,6 +45,9 @@ void SonarSegmentationNode::setup_publishers_and_subscribers() {
     auto camera_info_topic =
         this->get_parameter("topic.segmentation_camera_info_topic").as_string();
 
+    auto sonar_info_topic =
+        this->get_parameter("topic.sonar_info_sub_topic").as_string();
+
     segmentation_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
         segmentation_topic, 1,
         std::bind(&SonarSegmentationNode::segmentationCallback, this, std::placeholders::_1));
@@ -55,15 +60,19 @@ void SonarSegmentationNode::setup_publishers_and_subscribers() {
         sonar_topic, 1,
         std::bind(&SonarSegmentationNode::sonarCallback, this, std::placeholders::_1));
 
+    sonar_info_sub_ = this->create_subscription<vortex_msgs::msg::SonarInfo>(
+        sonar_info_topic, vortex::utils::qos_profiles::sensor_data_profile(1),
+        std::bind(&SonarSegmentationNode::sonarInfoCallback, this, std::placeholders::_1));
+
     camera_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(
         camera_info_topic, 1,
         std::bind(&SonarSegmentationNode::cameraInfoCallback, this, std::placeholders::_1));
 
-    output_overlay_pub_ = this->create_publisher<sensor_msgs::msg::Image>(
-        "/sonar_segmentation/overlay_image", 10);
+    output_sonar_pub_ = this->create_publisher<sensor_msgs::msg::Image>(
+        "/sonar_segmentation/sonar_image", 10);
 
-    output_pub_ = this->create_publisher<sensor_msgs::msg::Image>(
-        "/sonar_segmentation/image", 10);
+    output_mask_pub_ = this->create_publisher<sensor_msgs::msg::Image>(
+        "/sonar_segmentation/mask", 10);
 }
 
 void SonarSegmentationNode::setup_service_clients() {
@@ -99,6 +108,7 @@ void SonarSegmentationNode::callRespawnService() {
     segmentation_ready_ = false;
     sonar_ready_ = false;
     timer_ready_ = false;
+    sonar_info_ready_ = false;
 
 
     std::random_device rd;
@@ -107,7 +117,7 @@ void SonarSegmentationNode::callRespawnService() {
     std::uniform_real_distribution<> disty(-13, 2);
     std::uniform_real_distribution<> distyaw(0, 360);
 
-    request->name = "Orca";
+    request->name = "orca";
 
     request->origin.position.x = distx(gen);
     request->origin.position.y = disty(gen);
@@ -133,6 +143,7 @@ void SonarSegmentationNode::callRespawnService() {
     depth_ready_ = false;
     segmentation_ready_ = false;
     sonar_ready_ = false;
+    sonar_info_ready_ = false;
     std::this_thread::sleep_for(std::chrono::milliseconds(400));
     timer_ready_ = true;
 
@@ -147,6 +158,15 @@ void SonarSegmentationNode::cameraInfoCallback(
         msg->k[6], msg->k[7], msg->k[8]
     );
     camera_info_ready_ = true;
+    process();
+}
+
+void SonarSegmentationNode::sonarInfoCallback(
+    const vortex_msgs::msg::SonarInfo::SharedPtr msg)
+{
+    vertical_fov_ = msg->vertical_fov;
+    sonar_info_ready_ = true;
+    process();
 }
 
 void SonarSegmentationNode::segmentationCallback(
@@ -154,6 +174,7 @@ void SonarSegmentationNode::segmentationCallback(
 {
     segmentation_img_ = cv_bridge::toCvCopy(msg, "bgr8")->image;
     segmentation_ready_ = true;
+    process();
 }
 
 void SonarSegmentationNode::depthCallback(
@@ -161,6 +182,7 @@ void SonarSegmentationNode::depthCallback(
 {
     depth_img_ = cv_bridge::toCvCopy(msg)->image;
     depth_ready_ = true;
+    process();
 }
 
 void SonarSegmentationNode::sonarCallback(
@@ -194,7 +216,7 @@ void SonarSegmentationNode::process()
     double fy = camera_k_.at<double>(1,1);
     double cx = camera_k_.at<double>(0,2);
     double cy = camera_k_.at<double>(1,2);
-    int pmy = fy*tan(15*M_PI/180);
+    int pmy = fy*tan(vertical_fov_*M_PI/360.0);
     int ys = cy-pmy;
     int ye = cy+pmy;
 
@@ -258,12 +280,12 @@ void SonarSegmentationNode::process()
     auto sonar_msg = cv_bridge::CvImage(
         std_msgs::msg::Header(), "mono8", sonar_img_).toImageMsg();
 
-    output_overlay_pub_->publish(*sonar_msg);
+    output_sonar_pub_->publish(*sonar_msg);
 
     auto msg = cv_bridge::CvImage(
         std_msgs::msg::Header(), "mono8", output).toImageMsg();
 
-    output_pub_->publish(*msg);
+    output_mask_pub_->publish(*msg);
 
     static int frame_id = 0;
 

@@ -2,11 +2,13 @@
   ros__parameters:
 
     topic:
-      sonar_sub_topic: "/forward_looking_sonar/display_mono"
+      sonar_sub_topic: "/orca/fls_image/display_mono"
+      sonar_info_sub_topic: "/orca/fls/sonar_info"
       segmentation_image_sub_topic: "/front_camera_seg/image_color"
       segmentation_camera_info_topic: "/front_camera_seg/camera_info"
       color_image_sub_topic:    "/cam/image_color"
       depth_image_sub_topic:    "/depth_camera/image_depth"
+
 
     service:
       respawn_service: "/stonefish_ros2/respawn_robot"

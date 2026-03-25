@@ -16,6 +16,7 @@
   <depend>stonefish_ros2</depend>
   <depend>vortex_utils</depend>
   <depend>vortex_msgs</depend>
+  <depend>vortex_utils_ros</depend>
 
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

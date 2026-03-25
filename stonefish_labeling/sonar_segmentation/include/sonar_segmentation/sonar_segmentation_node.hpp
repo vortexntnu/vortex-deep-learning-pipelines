@@ -7,6 +7,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <stonefish_ros2/srv/respawn.hpp>
+#include <vortex_msgs/msg/sonar_info.hpp>
 #include <vortex/utils/math.hpp>
 
 namespace vortex::sonar_segmentation {
@@ -21,6 +22,7 @@ private:
     void segmentationCallback(const sensor_msgs::msg::Image::SharedPtr msg);
     void depthCallback(const sensor_msgs::msg::Image::SharedPtr msg);
     void sonarCallback(const sensor_msgs::msg::Image::SharedPtr msg);
+    void sonarInfoCallback(const vortex_msgs::msg::SonarInfo::SharedPtr msg);
     void cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg);
     void callRespawnService();
 
@@ -36,6 +38,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr segmentation_sub_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr depth_sub_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sonar_sub_;
+    rclcpp::Subscription<vortex_msgs::msg::SonarInfo>::SharedPtr sonar_info_sub_;
     rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_sub_;
 
     // Sercice Clients
@@ -45,8 +48,8 @@ private:
     rclcpp::TimerBase::SharedPtr respawn_timer_;
 
     // Publisher
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr output_overlay_pub_;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr output_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr output_sonar_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr output_mask_pub_;
 
     // Latest frames
     cv::Mat segmentation_img_;
@@ -58,9 +61,11 @@ private:
     bool sonar_ready_ = false;
     bool camera_info_ready_ = false;
     bool timer_ready_ = false;
+    bool sonar_info_ready_ = false;
 
     // Parameters
     double fov_ = 0.0;
+    double vertical_fov_ = 0.0;
     double sonar_range_ = 0.0;
     cv::Mat camera_k_;
     std::string output_frame_id_;

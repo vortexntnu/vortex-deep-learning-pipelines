@@ -19,6 +19,7 @@ find_package(stonefish_ros2 REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(vortex_msgs REQUIRED)
 find_package(stonefish_ros2 REQUIRED)
+find_package(vortex_utils_ros REQUIRED)
 
 include_directories(
   include
@@ -38,6 +39,7 @@ ament_target_dependencies(
   stonefish_ros2
   vortex_utils
   vortex_msgs
+  vortex_utils_ros
 )
 
 target_link_libraries(
