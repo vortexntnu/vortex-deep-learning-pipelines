@@ -5,3 +5,6 @@ repositories:
   vortex-utils:
     type: git
     url: https://github.com/vortexntnu/vortex-utils.git
+  stonefish-ros2:
+    type: git
+    url: https://github.com/vortexntnu/stonefish_ros2

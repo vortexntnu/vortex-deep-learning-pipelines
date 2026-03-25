@@ -37,6 +37,9 @@ void SonarSegmentationNode::declare_parameters() {
 void SonarSegmentationNode::setup_publishers_and_subscribers() {
     auto sonar_topic =
         this->get_parameter("topic.sonar_sub_topic").as_string();
+    
+    auto sonar_info_topic =
+        this->get_parameter("topic.sonar_info_topic").as_string();
 
     auto segmentation_topic =
         this->get_parameter("topic.segmentation_image_sub_topic").as_string();
@@ -176,6 +179,7 @@ void SonarSegmentationNode::sonarCallback(
     sonar_ready_ = true;
     process();
 }
+
 
 void SonarSegmentationNode::process()
 {
