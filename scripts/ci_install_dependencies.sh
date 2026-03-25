@@ -18,13 +18,15 @@ sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-13 100
 
 # Stuff for Stonefish
 sudo apt-get update -qq
-sudo apt-get install -y --no-install-recommends \
-    libglu1-mesa-dev \
-    freeglut3-dev \
-    mesa-common-dev \
+apt-get install -y --no-install-recommends \
+    software-properties-common \
+    build-essential \
+    cmake \
+    git \
+    libglm-dev \
     libsdl2-dev \
     libfreetype6-dev \
-    libglm-dev
+    lcov
 
 echo "Done installing additional dependencies."
 
