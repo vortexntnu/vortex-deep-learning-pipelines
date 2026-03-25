@@ -12,7 +12,6 @@
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
-  <depend>opencv</depend>
   <depend>stonefish_ros2</depend>
   <depend>vortex_utils</depend>
   <depend>vortex_msgs</depend>
