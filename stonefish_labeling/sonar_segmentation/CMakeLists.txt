@@ -18,6 +18,7 @@ find_package(OpenCV REQUIRED)
 find_package(stonefish_ros2 REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(vortex_msgs REQUIRED)
+find_package(stonefish_ros2 REQUIRED)
 
 include_directories(
   include
