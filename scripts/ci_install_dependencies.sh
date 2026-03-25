@@ -17,3 +17,10 @@ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
 sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-13 100
 
 echo "Done installing additional dependencies."
+
+# Install stonefish
+git clone --depth 1 https://github.com/vortexntnu/stonefish.git /tmp/stonefish
+
+cmake -S /tmp/stonefish -B /tmp/stonefish/build
+cmake --build /tmp/stonefish/build -j"$(nproc)"
+cmake --install /tmp/stonefish/build
