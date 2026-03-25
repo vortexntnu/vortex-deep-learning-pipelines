@@ -16,12 +16,13 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
 sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-13 100
 
-# Install opengl dev libraries
+# Stuff for Stonefish
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends \
     libglu1-mesa-dev \
     freeglut3-dev \
-    mesa-common-dev
+    mesa-common-dev \
+    libsdl2-dev
 
 echo "Done installing additional dependencies."
 
