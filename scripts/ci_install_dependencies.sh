@@ -22,7 +22,8 @@ sudo apt-get install -y --no-install-recommends \
     libglu1-mesa-dev \
     freeglut3-dev \
     mesa-common-dev \
-    libsdl2-dev
+    libsdl2-dev \
+    libfreetype6-dev
 
 echo "Done installing additional dependencies."
 
