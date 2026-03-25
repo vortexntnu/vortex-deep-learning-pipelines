@@ -14,7 +14,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
-find_package(opencv REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(stonefish_ros2 REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(vortex_msgs REQUIRED)
@@ -40,7 +40,6 @@ ament_target_dependencies(
   vortex_utils
   vortex_msgs
   vortex_utils_ros
-  opencv
 )
 
 target_link_libraries(
