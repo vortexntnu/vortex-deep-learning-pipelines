@@ -17,6 +17,3 @@
     data_format:
       fov: 120.0 # Field of view of the sonar and camera in degrees.
       sonar_range: 20.0 # Maximum range of the sonar in meters.
-    
-
-    
