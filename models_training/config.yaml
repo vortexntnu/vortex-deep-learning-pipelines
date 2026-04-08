@@ -1,6 +1,6 @@
 run:
-  mode: "slurm" # "local" or "slurm"
-  task: "obb" # "segmentation", "detection", or "obb"
+  mode: "local" # "local" or "slurm"
+  task: "segmentation" # "segmentation", "detection", or "obb"
   output_dir: "results" # where training outputs/logs go
   train_script: "train.py" # training entry script
 
@@ -20,7 +20,7 @@ models:
   segmentation:
     roboflow:
       workspace_id: "hei-qp1ee" # Roboflow workspace ID
-      project_id: "pipe_seg_merge_jan_2026" # dataset project
+      project_id: "sonar-segmentation" # dataset project
       version: 1 # dataset version
       dataset_format: "yolo26" # export format
     model: "yolo26m-seg.pt" # pretrained model file
