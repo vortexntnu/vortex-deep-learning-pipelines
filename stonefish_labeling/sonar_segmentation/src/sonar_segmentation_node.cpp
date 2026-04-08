@@ -21,6 +21,7 @@ void SonarSegmentationNode::declare_parameters() {
     this->declare_parameter<std::string>("topic.segmentation_camera_info_topic");
 
     this->declare_parameter<std::string>("service.respawn_service");
+    this->declare_parameter<std::string>("service.drone_name");
 
     this->declare_parameter<double>("data_format.fov");
     this->declare_parameter<double>("data_format.sonar_range");
@@ -30,6 +31,9 @@ void SonarSegmentationNode::declare_parameters() {
 
     sonar_range_ =
         this->get_parameter("data_format.sonar_range").as_double();
+
+    drone_name_ =
+        this->get_parameter("service.drone_name").as_string();
 }
 
 void SonarSegmentationNode::setup_publishers_and_subscribers() {
@@ -117,7 +121,7 @@ void SonarSegmentationNode::callRespawnService() {
     std::uniform_real_distribution<> disty(-13, 2);
     std::uniform_real_distribution<> distyaw(0, 360);
 
-    request->name = "orca";
+    request->name = drone_name_;
 
     request->origin.position.x = distx(gen);
     request->origin.position.y = disty(gen);

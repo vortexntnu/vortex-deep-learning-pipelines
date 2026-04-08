@@ -12,7 +12,11 @@
 
     service:
       respawn_service: "/stonefish_ros2/respawn_robot"
+      drone_name: "orca" # Name of the drone for respawn service.
 
     data_format:
       fov: 120.0 # Field of view of the sonar and camera in degrees.
       sonar_range: 20.0 # Maximum range of the sonar in meters.
+    
+
+    

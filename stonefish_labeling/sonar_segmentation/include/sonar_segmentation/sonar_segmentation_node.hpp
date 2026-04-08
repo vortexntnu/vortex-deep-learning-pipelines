@@ -67,6 +67,7 @@ private:
     double fov_ = 0.0;
     double vertical_fov_ = 0.0;
     double sonar_range_ = 0.0;
+    std::string drone_name_;
     cv::Mat camera_k_;
     std::string output_frame_id_;
 };
