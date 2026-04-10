@@ -20,8 +20,8 @@ def _draw_obb(img, cx, cy, w, h, theta, color=(0, 255, 0), thickness=2):
     return box
 
 
-def process_frame(frame, model, conf, device):
-    results = model.predict(frame, conf=conf, device=device, verbose=False)
+def process_frame(frame, model, conf, device, imgsz=None):
+    results = model.predict(frame, conf=conf, device=device, verbose=False, imgsz=imgsz)
 
     detections = []
     annotated = frame.copy()

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 
+import cv2
+import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
@@ -28,6 +30,7 @@ class YoloObjectDetection(Node):
             ("yolo_detections_pub_topic", "/detections"),
             ("yolo_annotated_pub_topic", "/annotated"),
             ("device", "cpu"),
+            ("imgsz", [1984, 1088]),
         ]
 
         # Declare all parameters in a single, structured call.
@@ -41,6 +44,7 @@ class YoloObjectDetection(Node):
             "yolo_detections_pub_topic": "dets_topic",
             "yolo_annotated_pub_topic": "annot_topic",
             "device": "device",
+            "imgsz": "imgsz",
         }
 
         params = self.get_parameters([name for name, _ in param_declarations])
@@ -77,11 +81,30 @@ class YoloObjectDetection(Node):
         self.get_logger().info(f"Loading model: {mp}")
         return yolo_utils.load_model(mp, self.conf)
 
+    @staticmethod
+    def _pad_to_stride(img, stride=32):
+        h, w = img.shape[:2]
+        pad_h = (-h) % stride
+        pad_w = (-w) % stride
+        left = pad_w // 2
+        right = pad_w - left
+        return cv2.copyMakeBorder(img, pad_h, 0, left, right, cv2.BORDER_CONSTANT, value=0)
+
     def on_image(self, msg: Image):
-        frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+        if msg.encoding in ("mono16", "16UC1"):
+            raw = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
+            gray = np.clip(raw // 4, 0, 255).astype(np.uint8)
+            frame = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        elif msg.encoding in ("mono8", "8UC1"):
+            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="mono8")
+            frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        else:
+            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+
+        frame = self._pad_to_stride(frame)
 
         detections, annot = yolo_utils.process_frame(
-            frame, self.model, self.conf, self.device
+            frame, self.model, self.conf, self.device, self.imgsz
         )
 
         det_array = Detection2DArray()
