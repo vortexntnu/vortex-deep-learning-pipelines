@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 from glob import glob
+
+from setuptools import find_packages, setup
 
 package_name = 'yolo_object_detection'
 
@@ -8,7 +9,10 @@ setup(
     version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
-        ('share/ament_index/resource_index/packages', ['resource/yolo_object_detection']),
+        (
+            'share/ament_index/resource_index/packages',
+            ['resource/yolo_object_detection'],
+        ),
         ('share/yolo_object_detection', ['package.xml']),
         ('share/yolo_object_detection/launch', glob('launch/*.launch.py')),
         ('share/yolo_object_detection/config', glob('config/*.yaml')),
