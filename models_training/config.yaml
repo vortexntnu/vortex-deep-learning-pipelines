@@ -72,4 +72,3 @@ models:
     patience: 200 # early-stop patience
     requirements: "requirements.txt" # dependency file
     export: ["onnx"] # export trained model (onnx, torchscript etc.)''
-

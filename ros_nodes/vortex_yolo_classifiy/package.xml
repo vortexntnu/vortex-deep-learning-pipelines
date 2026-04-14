@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>PyTorch classifier ROS2 node</description>
 
-  <maintainer email="gard@example.com">gard</maintainer>
+  <maintainer email="guard@example.com">guard</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_python</buildtool_depend>

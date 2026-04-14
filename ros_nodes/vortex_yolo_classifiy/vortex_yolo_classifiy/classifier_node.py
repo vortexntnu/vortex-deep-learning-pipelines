@@ -1,14 +1,12 @@
-import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-import torch
-from torchvision import transforms
 import cv2
+import rclpy
+from cv_bridge import CvBridge
 from PIL import Image as PILImage
-from ultralytics import YOLO
+from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
-
+from sensor_msgs.msg import Image
+from torchvision import transforms
+from ultralytics import YOLO
 
 
 class ClassifierNode(Node):
@@ -24,27 +22,28 @@ class ClassifierNode(Node):
         if not model_path:
             raise RuntimeError("model_path parameter not set")
         device = self.get_parameter('device').get_parameter_value().string_value
-        image_sub_topic = self.get_parameter('image_sub_topic').get_parameter_value().string_value
+        image_sub_topic = (
+            self.get_parameter('image_sub_topic').get_parameter_value().string_value
+        )
 
         # Load YOLO model
         self.model = YOLO(model_path)
         self.device = device
-        self.get_logger().info(f"YOLO classification model loaded from {model_path} on device '{device}'")
+        self.get_logger().info(
+            f"YOLO classification model loaded from {model_path} on device '{device}'"
+        )
 
         self.bridge = CvBridge()
 
-        
         self.subscription = self.create_subscription(
-            Image,
-            image_sub_topic,
-            self.image_callback,
-            qos_profile_sensor_data
+            Image, image_sub_topic, self.image_callback, qos_profile_sensor_data
         )
 
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-        ])
-
+        self.transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+            ]
+        )
 
     def image_callback(self, msg: Image):
         try:
@@ -54,7 +53,7 @@ class ClassifierNode(Node):
             # Let YOLO handle preprocessing
             results = self.model(
                 pil_image,
-                imgsz=640,      # IMPORTANT
+                imgsz=640,  # IMPORTANT
                 device=self.device,
                 verbose=False,
             )
@@ -64,12 +63,11 @@ class ClassifierNode(Node):
             conf = probs.top1conf
             class_name = self.model.names[class_id]
 
-            self.get_logger().info(
-                f"Prediction: {class_name} ({conf:.3f})"
-            )
+            self.get_logger().info(f"Prediction: {class_name} ({conf:.3f})")
 
         except Exception as e:
             self.get_logger().error(f"Error processing image: {e}")
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -77,6 +75,7 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
