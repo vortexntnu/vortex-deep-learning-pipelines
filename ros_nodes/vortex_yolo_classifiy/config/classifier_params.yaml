@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    model_path: ''
+    image_sub_topic: '/filtered_image'
+    device: 'cpu' # or '0' for GPU

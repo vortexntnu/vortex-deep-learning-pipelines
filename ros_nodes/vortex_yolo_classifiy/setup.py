@@ -11,13 +11,15 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/classifier_node.launch.py']),
+        ('share/' + package_name + '/config', ['config/classifier_params.yaml']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='gard',
     maintainer_email='gard@example.com',
     description='PyTorch image classifier node',
-    license='Apache-2.0',
+    license='MIT',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'classifier_node = vortex_yolo_classifiy.classifier_node:main',
