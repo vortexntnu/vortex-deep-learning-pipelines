@@ -15,25 +15,28 @@ class ClassifierNode(Node):
     def __init__(self):
         super().__init__('classifier_node')
 
-        # Declare parameter
+        # Declare parameters
         self.declare_parameter('model_path', '')
+        self.declare_parameter('device', 'cpu')
+        self.declare_parameter('image_sub_topic', '/filtered_image')
 
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         if not model_path:
             raise RuntimeError("model_path parameter not set")
+        device = self.get_parameter('device').get_parameter_value().string_value
+        image_sub_topic = self.get_parameter('image_sub_topic').get_parameter_value().string_value
 
-        # Load PyTorch model
-        
+        # Load YOLO model
         self.model = YOLO(model_path)
-        self.get_logger().info("YOLO classification model loaded")
-        self.get_logger().info(f"Loaded model from {model_path}")
+        self.device = device
+        self.get_logger().info(f"YOLO classification model loaded from {model_path} on device '{device}'")
 
         self.bridge = CvBridge()
 
         
         self.subscription = self.create_subscription(
             Image,
-            '/filtered_image',
+            image_sub_topic,
             self.image_callback,
             qos_profile_sensor_data
         )
@@ -52,7 +55,8 @@ class ClassifierNode(Node):
             results = self.model(
                 pil_image,
                 imgsz=640,      # IMPORTANT
-                verbose=False
+                device=self.device,
+                verbose=False,
             )
 
             probs = results[0].probs

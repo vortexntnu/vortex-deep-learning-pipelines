@@ -24,7 +24,7 @@ def launch_setup(context, *args, **kwargs):
 
     classifier_params = os.path.join(
         get_package_share_directory('vortex_yolo_classifiy'),
-        'config/classifier_params.yaml',
+        'config/vortex_yolo_classify_params.yaml',
     )
 
     classifier_node = Node(
