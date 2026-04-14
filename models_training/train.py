@@ -31,10 +31,6 @@ def download_dataset(rf_cfg):
     base = Path("roboflow_data") / f"{rf_cfg['project_id']}-v{rf_cfg['version']}"
     base.mkdir(parents=True, exist_ok=True)
 
-    if (base / "data.yaml").exists():
-        print(f"Dataset already downloaded at {base}")
-        return base / "data.yaml"
-
     rf = Roboflow(api_key=os.environ["ROBOFLOW_API_KEY"])
     proj = rf.workspace(rf_cfg["workspace_id"]).project(rf_cfg["project_id"])
 
@@ -44,7 +40,7 @@ def download_dataset(rf_cfg):
         overwrite=True,
     )
 
-    return Path(dataset.location) / "data.yaml"
+    return Path(dataset.location)
 
 
 def fix_data_yaml(path):
@@ -73,17 +69,17 @@ def train(config_path):
     model_cfg = config["models"][task]
     rf_cfg = model_cfg["roboflow"]
 
-    data_yaml = download_dataset(rf_cfg)
-    fix_data_yaml(data_yaml)
+    dataset_path = download_dataset(rf_cfg)
 
-    model = YOLO(model_cfg["model"])
+    model = YOLO(model_cfg["model"], task="classify")
     device = get_device()
 
     timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     run_name = f"{task}-{timestamp}"
 
     model.train(
-        data=str(Path(data_yaml).resolve()),
+        data=str(dataset_path.resolve()),  # parent folder, not yaml
+        task=task,
         epochs=model_cfg["epochs"],
         imgsz=model_cfg["imgsz"],
         batch=model_cfg["batch"],
