@@ -5,6 +5,7 @@ from PIL import Image as PILImage
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
+from std_msgs.msg import UInt8
 from torchvision import transforms
 from ultralytics import YOLO
 
@@ -17,6 +18,7 @@ class ClassifierNode(Node):
         self.declare_parameter('model_path', '')
         self.declare_parameter('device', 'cpu')
         self.declare_parameter('image_sub_topic', '/filtered_image')
+        self.declare_parameter('class_pub_topic', '/classification_result')
 
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         if not model_path:
@@ -24,6 +26,9 @@ class ClassifierNode(Node):
         device = self.get_parameter('device').get_parameter_value().string_value
         image_sub_topic = (
             self.get_parameter('image_sub_topic').get_parameter_value().string_value
+        )
+        class_pub_topic = (
+            self.get_parameter('class_pub_topic').get_parameter_value().string_value
         )
 
         # Load YOLO model
@@ -38,6 +43,7 @@ class ClassifierNode(Node):
         self.subscription = self.create_subscription(
             Image, image_sub_topic, self.image_callback, qos_profile_sensor_data
         )
+        self.publisher = self.create_publisher(UInt8, class_pub_topic, 10)
 
         self.transform = transforms.Compose(
             [
@@ -64,6 +70,10 @@ class ClassifierNode(Node):
             class_name = self.model.names[class_id]
 
             self.get_logger().info(f"Prediction: {class_name} ({conf:.3f})")
+
+            out = UInt8()
+            out.data = class_id
+            self.publisher.publish(out)
 
         except Exception as e:
             self.get_logger().error(f"Error processing image: {e}")
