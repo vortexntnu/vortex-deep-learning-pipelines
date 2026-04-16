@@ -31,6 +31,10 @@ def download_dataset(rf_cfg):
     base = Path("roboflow_data") / f"{rf_cfg['project_id']}-v{rf_cfg['version']}"
     base.mkdir(parents=True, exist_ok=True)
 
+    if (base / "data.yaml").exists():
+        print(f"Dataset already downloaded at {base}")
+        return base
+
     rf = Roboflow(api_key=os.environ["ROBOFLOW_API_KEY"])
     proj = rf.workspace(rf_cfg["workspace_id"]).project(rf_cfg["project_id"])
 
@@ -71,14 +75,21 @@ def train(config_path):
 
     dataset_path = download_dataset(rf_cfg)
 
-    model = YOLO(model_cfg["model"], task="classify")
+    if task == "classify": #The reason we do this is because the classify task expects a directory of images, while the other tasks expect a data.yaml file
+        data_arg = str(dataset_path.resolve())
+    else:
+        data_yaml = dataset_path / "data.yaml"
+        fix_data_yaml(data_yaml)
+        data_arg = str(data_yaml.resolve())
+
+    model = YOLO(model_cfg["model"], task=task)
     device = get_device()
 
     timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     run_name = f"{task}-{timestamp}"
 
     model.train(
-        data=str(dataset_path.resolve()),  # parent folder, not yaml
+        data=data_arg,
         task=task,
         epochs=model_cfg["epochs"],
         imgsz=model_cfg["imgsz"],
