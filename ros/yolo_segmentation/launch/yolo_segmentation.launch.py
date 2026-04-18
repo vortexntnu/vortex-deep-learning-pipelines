@@ -7,15 +7,15 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     yolo_params = os.path.join(
-        get_package_share_directory("vortex_image_segmentation"),
-        "params",
-        "yolo_params.yaml",
+        get_package_share_directory("yolo_segmentation"),
+        "config",
+        "yolo_segmentation_params.yaml",
     )
 
     return LaunchDescription(
         [
             Node(
-                package="vortex_image_segmentation",
+                package="yolo_segmentation",
                 executable="yolo_seg_node",
                 name="yolo_segmentation_node",
                 output="screen",

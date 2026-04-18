@@ -1,4 +1,4 @@
-# vortex_image_segmentation
+# yolo_segmentation
 Real-time instance segmentation using YOLOv8/v11. This node subscribes to an image topic, runs segmentation inference, and publishes bounding boxes, segmentation masks, and optional debug visualization.
 
 ## Features
@@ -11,7 +11,7 @@ Real-time instance segmentation using YOLOv8/v11. This node subscribes to an ima
 
 ## Run
 ```bash
-ros2 launch vortex_image_segmentation yolo_segmentation.launch.py
+ros2 launch yolo_segmentation yolo_segmentation.launch.py
 ```
 
 ## Topics
@@ -34,7 +34,7 @@ ros2 launch vortex_image_segmentation yolo_segmentation.launch.py
   - Only published if `pub_debug: True`
 
 ## Parameters
-All parameters are configured in `params/yolo_params.yaml`:
+All parameters are configured in `config/yolo_segmentation_params.yaml`:
 
 ### Node Parameters
 | Parameter | Type | Default | Description |

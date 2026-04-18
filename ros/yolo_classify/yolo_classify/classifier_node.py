@@ -15,10 +15,10 @@ class ClassifierNode(Node):
         super().__init__('classifier_node')
 
         # Declare parameters
-        self.declare_parameter('model_path', '')
-        self.declare_parameter('device', 'cpu')
-        self.declare_parameter('image_sub_topic', '/filtered_image')
-        self.declare_parameter('class_pub_topic', '/classification_result')
+        self.declare_parameter('model_path')
+        self.declare_parameter('device')
+        self.declare_parameter('image_sub_topic')
+        self.declare_parameter('class_pub_topic')
 
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         if not model_path:

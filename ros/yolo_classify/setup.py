@@ -2,7 +2,7 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-package_name = 'vortex_yolo_classifiy'
+package_name = 'yolo_classify'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'classifier_node = vortex_yolo_classifiy.classifier_node:main',
+            'classifier_node = yolo_classify.classifier_node:main',
         ],
     },
 )

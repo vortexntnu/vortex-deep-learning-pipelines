@@ -23,12 +23,12 @@ def launch_setup(context, *args, **kwargs):
     validate_device(device)
 
     classifier_params = os.path.join(
-        get_package_share_directory('vortex_yolo_classifiy'),
-        'config/vortex_yolo_classify_params.yaml',
+        get_package_share_directory('yolo_classify'),
+        'config/yolo_classify_params.yaml',
     )
 
     classifier_node = Node(
-        package='vortex_yolo_classifiy',
+        package='yolo_classify',
         executable='classifier_node',
         name='classifier_node',
         namespace='yolo',
