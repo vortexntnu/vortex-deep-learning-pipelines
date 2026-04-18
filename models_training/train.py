@@ -75,9 +75,8 @@ def train(config_path):
 
     dataset_path = download_dataset(rf_cfg)
 
-    if (
-        task == "classify"
-    ):  # The reason we do this is because the classify task expects a directory of images, while the other tasks expect a data.yaml file
+    # The reason we do this is because the classify task expects a directory of images, while the other tasks expect a data.yaml file
+    if task == "classify":
         data_arg = str(dataset_path.resolve())
     else:
         data_yaml = dataset_path / "data.yaml"
