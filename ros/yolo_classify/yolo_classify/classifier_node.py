@@ -1,82 +1,69 @@
-import cv2
+#!/usr/bin/env python3
+
+import os
+
 import rclpy
+from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
-from PIL import Image as PILImage
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
 from std_msgs.msg import UInt8
-from torchvision import transforms
-from ultralytics import YOLO
+
+from yolo_classify import yolo_utils
 
 
 class ClassifierNode(Node):
     def __init__(self):
         super().__init__('classifier_node')
 
-        # Declare parameters
-        self.declare_parameter('model_path')
-        self.declare_parameter('device')
-        self.declare_parameter('image_sub_topic')
-        self.declare_parameter('class_pub_topic')
-
-        model_path = self.get_parameter('model_path').get_parameter_value().string_value
-        if not model_path:
-            raise RuntimeError("model_path parameter not set")
-        device = self.get_parameter('device').get_parameter_value().string_value
-        image_sub_topic = (
-            self.get_parameter('image_sub_topic').get_parameter_value().string_value
-        )
-        class_pub_topic = (
-            self.get_parameter('class_pub_topic').get_parameter_value().string_value
-        )
-
-        # Load YOLO model
-        self.model = YOLO(model_path)
-        self.device = device
-        self.get_logger().info(
-            f"YOLO classification model loaded from {model_path} on device '{device}'"
-        )
-
+        self._load_parameters()
+        self.model = self._load_model()
         self.bridge = CvBridge()
 
-        self.subscription = self.create_subscription(
-            Image, image_sub_topic, self.image_callback, qos_profile_sensor_data
+        self.sub = self.create_subscription(
+            Image, self.input_topic, self.on_image, qos_profile_sensor_data
         )
-        self.publisher = self.create_publisher(UInt8, class_pub_topic, 10)
+        self.pub = self.create_publisher(UInt8, self.output_class_topic, 10)
 
-        self.transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-            ]
+    def _load_parameters(self):
+        params = {
+            'model_path': Parameter.Type.STRING,
+            'device': Parameter.Type.STRING,
+            'input_topic': Parameter.Type.STRING,
+            'output_class_topic': Parameter.Type.STRING,
+            'imgsz': Parameter.Type.INTEGER,
+            'verbose': Parameter.Type.BOOL,
+        }
+        for name, ptype in params.items():
+            self.declare_parameter(name, ptype)
+            setattr(self, name, self.get_parameter(name).value)
+
+    def _load_model(self):
+        mp = os.path.expanduser(self.model_path)
+        if not os.path.isabs(mp):
+            share = get_package_share_directory('yolo_classify')
+            mp = os.path.join(share, 'model', mp)
+        if not os.path.isfile(mp):
+            self.get_logger().error(f"Model not found: {mp}")
+            raise FileNotFoundError(mp)
+        self.get_logger().info(f"Loading model: {mp}")
+        return yolo_utils.load_model(mp)
+
+    def on_image(self, msg: Image):
+        frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+
+        class_id, conf, class_name = yolo_utils.process_frame(
+            frame, self.model, self.imgsz, self.device, self.verbose
         )
 
-    def image_callback(self, msg: Image):
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            pil_image = PILImage.fromarray(cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB))
-
-            # Let YOLO handle preprocessing
-            results = self.model(
-                pil_image,
-                imgsz=640,  # IMPORTANT
-                device=self.device,
-                verbose=False,
-            )
-
-            probs = results[0].probs
-            class_id = probs.top1
-            conf = probs.top1conf
-            class_name = self.model.names[class_id]
-
+        if self.verbose:
             self.get_logger().info(f"Prediction: {class_name} ({conf:.3f})")
 
-            out = UInt8()
-            out.data = class_id
-            self.publisher.publish(out)
-
-        except Exception as e:
-            self.get_logger().error(f"Error processing image: {e}")
+        out = UInt8()
+        out.data = class_id
+        self.pub.publish(out)
 
 
 def main(args=None):

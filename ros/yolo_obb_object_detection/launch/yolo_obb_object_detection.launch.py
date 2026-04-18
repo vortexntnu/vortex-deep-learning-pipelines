@@ -35,7 +35,7 @@ def launch_setup(context, *args, **kwargs):
 
     yolo_node = Node(
         package='yolo_obb_object_detection',
-        executable='yolo_obb_object_detection_node.py',
+        executable='yolo_obb_object_detection_node',
         name='yolo_obb_object_detection',
         namespace='yolo',
         output='screen',

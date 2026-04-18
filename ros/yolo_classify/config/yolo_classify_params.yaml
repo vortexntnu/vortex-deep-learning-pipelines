@@ -1,6 +1,8 @@
 /**:
   ros__parameters:
-    model_path: ''
-    image_sub_topic: '/filtered_image'
+    model_path: 'best.pt'
     device: 'cpu' # or '0' for GPU
-    class_pub_topic: '/classification_result'
+    input_topic: '/pipeline/camera/segmentation_mask'
+    output_class_topic: '/classification_result'
+    imgsz: 640 # input image size passed to YOLO inference
+    verbose: false # enable YOLO's per-inference console output

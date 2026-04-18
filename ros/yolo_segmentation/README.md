@@ -42,7 +42,7 @@ All parameters are configured in `config/yolo_segmentation_params.yaml`:
 | `input_topic` | string | `/gripper_camera/image_raw` | Topic to subscribe to for input images |
 | `output_bbox_topic` | string | `/pipeline/camera/bboxes` | Topic to publish bounding box detections |
 | `output_mask_topic` | string | `/pipeline/camera/segmentation_mask` | Topic to publish segmentation masks |
-| `debug_topic` | string | `/pipeline/camera/segmentation_debug` | Topic to publish debug visualization |
+| `output_debug_topic` | string | `/pipeline/camera/segmentation_debug` | Topic to publish debug visualization |
 | `pub_bbox` | bool | `true` | Enable/disable bounding box publishing |
 | `pub_mask` | bool | `true` | Enable/disable segmentation mask publishing |
 | `pub_debug` | bool | `false` | Enable/disable debug visualization publishing |
