@@ -1,8 +1,8 @@
 /**:
   ros__parameters:
-    model_path: 'obb_best_simulator.pt'
+    model_path: 'obb_best.pt'
     confidence_threshold: 0.1
-    input_topic: '/nautilus/front_camera/image_color'
+    input_topic: '/realsense/D555_409122300281_Color'
     output_detections_topic: '/yolo_obb_object_detection/detections'
     output_annotated_topic: '/yolo_obb_object_detection/annotated'
     device: 'cpu' # Inference device: 'cpu', 0, 1, 'cuda', 'cuda:0', or 'mps' (Mac GPU)

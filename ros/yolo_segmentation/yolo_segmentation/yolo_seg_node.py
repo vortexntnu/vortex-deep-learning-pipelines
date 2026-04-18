@@ -67,9 +67,7 @@ class YoloSegmentationNode(Node):
                 Image, self.output_mask_topic, qos_profile
             )
 
-        self.get_logger().info(
-            f"Node initialized. Subscribing to '{self.input_topic}'"
-        )
+        self.get_logger().info(f"Node initialized. Subscribing to '{self.input_topic}'")
 
     def _load_parameters(self) -> None:
         params = {
@@ -216,13 +214,9 @@ class YoloSegmentationNode(Node):
 
         scaled_camera_info.k = list(self._original_camera_info.k)
         scaled_camera_info.k[0] = self._original_camera_info.k[0] * scale
-        scaled_camera_info.k[2] = (
-            self._original_camera_info.k[2] * scale
-        ) + pad_width
+        scaled_camera_info.k[2] = (self._original_camera_info.k[2] * scale) + pad_width
         scaled_camera_info.k[4] = self._original_camera_info.k[4] * scale
-        scaled_camera_info.k[5] = (
-            self._original_camera_info.k[5] * scale
-        ) + pad_height
+        scaled_camera_info.k[5] = (self._original_camera_info.k[5] * scale) + pad_height
 
         scaled_camera_info.d = list(self._original_camera_info.d)
         scaled_camera_info.distortion_model = (
