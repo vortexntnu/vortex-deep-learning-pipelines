@@ -16,6 +16,7 @@ setup(
         ('share/yolo_ultralytics_pose_node', ['package.xml']),
         ('share/yolo_ultralytics_pose_node/launch', glob('launch/*.launch.py')),
         ('share/yolo_ultralytics_pose_node/config', glob('config/*.yaml')),
+        ('share/yolo_ultralytics_pose_node/model', glob('model/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
