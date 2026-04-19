@@ -9,6 +9,8 @@ and publishes valve detections with yaw angle derived from two keypoints
 import math
 import os
 
+import cv2
+
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
@@ -129,6 +131,30 @@ class YoloUltralyticsPoseNode(Node):
         self.pub_dets.publish(det_array)
 
         annotated = results[0].plot() if results else frame
+
+        if results:
+            for r in results:
+                kps = r.keypoints.xy.cpu().numpy()
+                boxes = r.boxes.xywh.cpu().numpy()
+                for i, kp in enumerate(kps):
+                    base = (int(kp[0][0]), int(kp[0][1]))
+                    tip = (int(kp[1][0]), int(kp[1][1]))
+                    cv2.line(annotated, base, tip, (0, 255, 0), 2)
+
+                    theta_deg = math.degrees(
+                        math.atan2(kp[1][1] - kp[0][1], kp[1][0] - kp[0][0])
+                    )
+                    cx, cy = int(boxes[i][0]), int(boxes[i][1])
+                    cv2.putText(
+                        annotated,
+                        f'{theta_deg:.1f} deg',
+                        (cx, cy - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6,
+                        (0, 255, 255),
+                        2,
+                    )
+
         out_msg = self.bridge.cv2_to_imgmsg(annotated, encoding='bgr8')
         out_msg.header = msg.header
         self.pub_annot.publish(out_msg)
