@@ -2,7 +2,7 @@
   ros__parameters:
     model_path: 'best.pt'
     confidence_threshold: 0.1
-    input_topic: '/realsense/D555_409122300281_Color'
+    input_topic: '/zed_node/left/image_rect_color'
     output_detections_topic: '/yolo_ultralytics_pose_node/detections'
     output_annotated_topic: '/yolo_ultralytics_pose_node/annotated'
-    device: 'cpu' # Inference device: 'cpu', 0, 1, 'cuda', 'cuda:0', or 'mps' (Mac GPU)
+    device: '0' # Inference device: 'cpu', 0, 1, 'cuda', 'cuda:0', or 'mps' (Mac GPU)
