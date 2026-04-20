@@ -21,7 +21,6 @@ setup(
     maintainer_email='mjengesv@ntnu.no',
     description='ROS 2 package that provides a YOLO-based instance segmentation node (yolo_seg_node) for real-time segmentation.',
     license='MIT',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'yolo_seg_node = yolo_segmentation.yolo_seg_node:main',

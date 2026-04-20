@@ -1,6 +1,6 @@
 run:
   mode: "local" # "local" or "slurm"
-  task: "classify" # "segment", "detect", "obb", "classify"
+  task: "obb" # "segment", "detect", "obb", "classify"
   output_dir: "results" # where training outputs/logs go
   train_script: "train.py" # training entry script
 
@@ -20,7 +20,7 @@ models:
   segment:
     roboflow:
       workspace_id: "hei-qp1ee" # Roboflow workspace ID
-      project_id: "pipe_seg_merge_jan_2026" # dataset project
+      project_id: "sonar-segmentation" # dataset project
       version: 1 # dataset version
       dataset_format: "yolo26" # export format
     model: "yolo26m-seg.pt" # pretrained model file
@@ -33,8 +33,8 @@ models:
 
   detect:
     roboflow:
-      workspace_id: "hei-qp1ee" # Roboflow workspace
-      project_id: "simulatorvalve-4rcbu" # dataset project
+      workspace_id: "valvar" # Roboflow workspace
+      project_id: "simulator_valve" # dataset project
       version: 1 # dataset version
       dataset_format: "yolo26" # export format
     model: "yolo26l.pt" # pretrained model file
@@ -47,15 +47,15 @@ models:
 
   obb:
     roboflow:
-      workspace_id: "hei-qp1ee" # Roboflow workspace
-      project_id: "valve_obb_annotations-ejsa6" # dataset project
-      version: 2 # dataset version
+      workspace_id: "valvar" # Roboflow workspace
+      project_id: "obb_sim_front_handle" # dataset project
+      version: 5 # dataset version
       dataset_format: "yolo26" # export format
-    model: "yolo26m-obb.pt" # pretrained model file
-    epochs: 200 # training epochs
+    model: "yolo26l-obb.pt" # pretrained model file
+    epochs: 150 # training epochs
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
-    patience: 30 # early-stop patience
+    patience: 20 # early-stop patience
     requirements: "requirements.txt" # dependency file
     export: ["onnx"] # export trained model (onnx, torchscript etc.)''
 
