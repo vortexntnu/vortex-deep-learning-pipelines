@@ -117,7 +117,7 @@ def main():
         type=str,
         default="",
         help="Comma-separated ids that should get axis-aligned (upright) boxes "
-             "instead of minAreaRect. Still emitted in OBB format.",
+        "instead of minAreaRect. Still emitted in OBB format.",
     )
     args = ap.parse_args()
 
@@ -126,9 +126,7 @@ def main():
         if args.keep_ids
         else None
     )
-    axis_aligned_ids = {
-        int(x) for x in args.axis_aligned_ids.split(",") if x.strip()
-    }
+    axis_aligned_ids = {int(x) for x in args.axis_aligned_ids.split(",") if x.strip()}
 
     seg_dir = Path(os.path.expanduser(args.seg_dir))
     out_dir = Path(args.out_dir)

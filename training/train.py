@@ -116,10 +116,14 @@ def normalize_obb_labels(dataset_path):
             cx, cy, w, h = map(float, parts[1:])
             hw, hh = w / 2, h / 2
             corners = [
-                cx - hw, cy - hh,
-                cx + hw, cy - hh,
-                cx + hw, cy + hh,
-                cx - hw, cy + hh,
+                cx - hw,
+                cy - hh,
+                cx + hw,
+                cy - hh,
+                cx + hw,
+                cy + hh,
+                cx - hw,
+                cy + hh,
             ]
             new_lines.append(f"{cls} " + " ".join(f"{c:.6f}" for c in corners))
             changed = True
