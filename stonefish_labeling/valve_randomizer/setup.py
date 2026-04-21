@@ -15,8 +15,8 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="vortex",
-    maintainer_email="web@vortexntnu.no",
+    maintainer="kluge7",
+    maintainer_email="89779148+kluge7@users.noreply.github.com",
     description="Publishes random valve joint setpoints to the Stonefish valve servos.",
     license="MIT",
     entry_points={
