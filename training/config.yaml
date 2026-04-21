@@ -1,6 +1,6 @@
 run:
   mode: "local" # "local" or "slurm"
-  task: "classify" # "segment", "detect", "obb", "classify"
+  task: "obb" # "segment", "detect", "obb", "classify"
   output_dir: "results" # where training outputs/logs go
   train_script: "train.py" # training entry script
 
@@ -47,12 +47,12 @@ models:
 
   obb:
     roboflow:
-      workspace_id: "hei-qp1ee" # Roboflow workspace
-      project_id: "valve_obb_annotations-ejsa6" # dataset project
-      version: 2 # dataset version
+      workspace_id: "valvar" # Roboflow workspace
+      project_id: "obb_valve_handle_better" # dataset project
+      version: 1 # dataset version
       dataset_format: "yolo26" # export format
     model: "yolo26m-obb.pt" # pretrained model file
-    epochs: 200 # training epochs
+    epochs: 50 # training epochs
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
     patience: 30 # early-stop patience
