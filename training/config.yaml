@@ -48,11 +48,11 @@ models:
   obb:
     roboflow:
       workspace_id: "valvar" # Roboflow workspace
-      project_id: "obb_sim_front_handle" # dataset project
-      version: 5 # dataset version
+      project_id: "obb_valve_handle_better" # dataset project
+      version: 1 # dataset version
       dataset_format: "yolo26" # export format
-    model: "yolo26l-obb.pt" # pretrained model file
-    epochs: 150 # training epochs
+    model: "yolo26m-obb.pt" # pretrained model file
+    epochs: 50 # training epochs
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
     patience: 20 # early-stop patience
