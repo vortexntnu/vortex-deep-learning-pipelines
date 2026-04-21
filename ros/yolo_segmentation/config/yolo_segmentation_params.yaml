@@ -1,7 +1,7 @@
 yolo_segmentation_node:
   ros__parameters:
     # Node parameters
-    input_topic: "/nautilus/down_camera/image_color"
+    input_topic: "/camera/camera/color/image_raw"
     output_bbox_topic: "/pipeline/camera/bboxes"
     output_mask_topic: "/pipeline/camera/segmentation_mask"
     output_debug_topic: "/pipeline/camera/segmentation_debug"
@@ -10,11 +10,11 @@ yolo_segmentation_node:
     pub_debug: True
 
     # Camera info parameters
-    input_camera_info_topic: "/nautilus/down_camera/camera_info"
-    output_camera_info_topic: "/pipeline/camera/camera_info"  # Scaled to match segmentation mask resolution
+    input_camera_info_topic: "/camera/camera/color/camera_info"
+    output_camera_info_topic: "/pipeline/camera/camera_info" # Scaled to match segmentation mask resolution
 
     # Implementation parameters
-    model_path: "yolo26l_sim_and_real.pt"
+    model_path: "mclab-seg-pipe-overfit-hopefully-large-model.pt"
     device: "cuda" # Options: "cpu", "cuda", "cuda:0", "cuda:1", "mps" ++
 
     # Image preprocessing (what ultralytics does):

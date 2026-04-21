@@ -24,7 +24,6 @@ setup(
     maintainer_email='89779148+kluge7@users.noreply.github.com',
     description='YOLO OBB object detection on images, publishing detections and annotated outputs.',
     license='MIT',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'yolo_obb_object_detection_node=yolo_obb_object_detection.yolo_obb_object_detection_node:main',
