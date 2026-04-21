@@ -4,7 +4,7 @@
   <name>valve_randomizer</name>
   <version>0.0.1</version>
   <description>Periodically publishes random valve joint setpoints for the Stonefish structure scenario.</description>
-  <maintainer email="web@vortexntnu.no">vortex</maintainer>
+  <maintainer email="89779148+kluge7@users.noreply.github.com">kluge7</maintainer>
   <license>MIT</license>
 
   <exec_depend>rclpy</exec_depend>
