@@ -17,6 +17,13 @@ def _draw_obb(img, cx, cy, w, h, theta, color=(0, 255, 0), thickness=2):
     box = cv2.boxPoints(rect)
     box = np.intp(box)
     cv2.polylines(img, [box], True, color, thickness)
+
+    length = float(w) / 2.0
+    x2 = int(cx + length * np.cos(theta))
+    y2 = int(cy + length * np.sin(theta))
+    cv2.line(img, (int(cx), int(cy)), (x2, y2), color, thickness)
+    cv2.circle(img, (int(cx), int(cy)), max(thickness, 2), color, -1)
+
     return box
 
 
@@ -48,7 +55,8 @@ def process_frame(frame, model, conf, device):
 
             box = _draw_obb(annotated, cx, cy, w, h, theta)
 
-            label = f"{model.names[cls_id]} {score:.2f}"
+            angle_deg = float(np.degrees(theta))
+            label = f"{model.names[cls_id]} {score:.2f} {angle_deg:.1f}deg"
             x0, y0 = int(box[0][0]), int(box[0][1])
 
             cv2.putText(
