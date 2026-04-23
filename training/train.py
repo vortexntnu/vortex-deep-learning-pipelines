@@ -153,7 +153,6 @@ def has_test_split(task, dataset_path, data_arg):
     test_path = (Path(data_arg).parent / test_rel).resolve()
     return test_path.exists()
 
-
 def train(config_path):
     config = load_config(config_path)
 
@@ -163,7 +162,6 @@ def train(config_path):
 
     dataset_path = download_dataset(rf_cfg)
 
-    # The reason we do this is because the classify task expects a directory of images, while the other tasks expect a data.yaml file
     if task == "classify":
         data_arg = str(dataset_path.resolve())
     else:
@@ -179,6 +177,8 @@ def train(config_path):
     timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     run_name = f"{task}-{timestamp}"
 
+    train_args = model_cfg.get("train_args", {})
+
     model.train(
         data=data_arg,
         task=task,
@@ -189,6 +189,7 @@ def train(config_path):
         device=device,
         project=config["run"]["output_dir"],
         name=run_name,
+        **train_args,
     )
 
     model.val()

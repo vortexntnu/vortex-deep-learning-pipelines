@@ -1,18 +1,18 @@
 run:
-  mode: "local" # "local" or "slurm"
+  mode: "slurm" # "local" or "slurm"
   task: "obb" # "segment", "detect", "obb", "classify"
   output_dir: "results" # where training outputs/logs go
   train_script: "train.py" # training entry script
 
 slurm:
-  account: "studiegrupper-vortex" # Slurm account name
+  account: "share-ie-idi" # Slurm account name
   partition: "GPUQ" # queue/partition to use
   gpus: 1 # number of GPUs
   gpu_type: "a100" # requested GPU model
   constraint: "gpu40g|gpu80g|gpu32g" # allowed GPU memory types
   cpus: 10 # CPU cores allocated, by default model.train uses 8 cores
   mem: "32G" # RAM allocated
-  time: "2:00:00" # job time limit
+  time: "3:00:00" # job time limit
   nodes: 1 # number of nodes
   ntasks: 1 # tasks per job
 
@@ -48,16 +48,23 @@ models:
   obb:
     roboflow:
       workspace_id: "valvar" # Roboflow workspace
-      project_id: "obb_valve_handle_better" # dataset project
-      version: 1 # dataset version
+      project_id: "obb_valve_handle" # dataset project
+      version: 4 # dataset version
       dataset_format: "yolo26" # export format
     model: "yolo26m-obb.pt" # pretrained model file
-    epochs: 50 # training epochs
+    epochs: 100 # training epochs
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
     patience: 20 # early-stop patience
     requirements: "requirements.txt" # dependency file
-    export: ["onnx"] # export trained model (onnx, torchscript etc.)''
+    export: ["onnx"] # export trained model (onnx, torchscript etc.)
+    train_args:
+      optimizer: "AdamW" # AdamW converges better than SGD on small datasets
+      lr0: 0.001 # initial learning rate, lower than default to avoid overshooting
+      weight_decay: 0.0005 # L2 regularization to reduce overfitting on small datasets
+      dropout: 0.1 # randomly drops 10% of neurons during training to prevent overfitting
+      flipud: 0.3 # 30% chance of vertical flip, realistic for underwater objects
+      close_mosaic: 10 # disables mosaic augmentation for last 10 epochs for stable convergence
 
   classify:
     roboflow:
