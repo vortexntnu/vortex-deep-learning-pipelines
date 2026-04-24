@@ -1,7 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu128
 numpy==1.26.4
 onnx==1.20.1
-onnxruntime-gpu==1.23.2
+onnxruntime-gpu==1.25.0
 onnxslim==0.1.85
 python-dotenv==1.0.1
 roboflow==1.1.24
