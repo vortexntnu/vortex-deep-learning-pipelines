@@ -1,8 +1,8 @@
 /**:
   ros__parameters:
-    model_path: 'best.pt'
-    confidence_threshold: 0.01
+    model_path: 'best_valve_handle_real_and_sim.pt'
+    confidence_threshold: 0.5
     input_topic: '/camera/camera/color/image_raw'
     output_detections_topic: '/yolo_obb_object_detection/detections'
     output_annotated_topic: '/yolo_obb_object_detection/annotated'
-    device: '0' # Inference device: 'cpu', 0, 1, 'cuda', 'cuda:0', or 'mps' (Mac GPU)
+    device: 'cpu' # Inference device: 'cpu', 0, 1, 'cuda', 'cuda:0', or 'mps' (Mac GPU)

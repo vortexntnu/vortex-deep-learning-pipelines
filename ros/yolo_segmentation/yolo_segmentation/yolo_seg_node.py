@@ -3,6 +3,7 @@
 import os
 from typing import Optional
 
+import cv2
 import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
@@ -66,6 +67,10 @@ class YoloSegmentationNode(Node):
             self._mask_publisher = self.create_publisher(
                 Image, self.output_mask_topic, qos_profile
             )
+        if self.pub_mask_overlay:
+            self._mask_overlay_publisher = self.create_publisher(
+                Image, self.output_mask_overlay_topic, qos_profile
+            )
 
         self.get_logger().info(f"Node initialized. Subscribing to '{self.input_topic}'")
 
@@ -85,6 +90,8 @@ class YoloSegmentationNode(Node):
             "pub_bbox": Parameter.Type.BOOL,
             "pub_mask": Parameter.Type.BOOL,
             "pub_debug": Parameter.Type.BOOL,
+            "pub_mask_overlay": Parameter.Type.BOOL,
+            "output_mask_overlay_topic": Parameter.Type.STRING,
             "input_camera_info_topic": Parameter.Type.STRING,
             "output_camera_info_topic": Parameter.Type.STRING,
         }
@@ -125,6 +132,8 @@ class YoloSegmentationNode(Node):
             self.publish_masks(result, msg.header)
         if self.pub_debug:
             self.publish_debug_image(result, msg.header)
+        if self.pub_mask_overlay:
+            self.publish_mask_overlay(result, cv_image, msg.header)
 
     def publish_bboxes_and_confidences(self, result: Results, header: Header) -> None:
         det_array = Detection2DArray()
@@ -236,6 +245,29 @@ class YoloSegmentationNode(Node):
             ) + pad_height
 
         self._camera_info_publisher.publish(scaled_camera_info)
+
+    def publish_mask_overlay(self, result: Results, cv_image: np.ndarray, header: Header) -> None:
+        h, w = cv_image.shape[:2]
+        combined = np.zeros((h, w), dtype=bool)
+
+        if result.masks is not None:
+            masks: np.ndarray = result.masks.data.cpu().numpy()
+            if masks.shape[0] > 0:
+                raw = np.any(masks > 0.0, axis=0)
+                if raw.shape != (h, w):
+                    raw = cv2.resize(
+                        raw.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST
+                    ).astype(bool)
+                combined = raw
+
+        overlay = cv_image.copy().astype(np.float32)
+        red = np.array([0, 0, 255], dtype=np.float32)
+        alpha = 0.5
+        overlay[combined] = overlay[combined] * (1.0 - alpha) + red * alpha
+
+        overlay_msg: Image = self.bridge.cv2_to_imgmsg(overlay.astype(np.uint8), "bgr8")
+        overlay_msg.header = header
+        self._mask_overlay_publisher.publish(overlay_msg)
 
     def publish_debug_image(self, result: Results, header: Header) -> None:
         debug_img: np.ndarray = self._segmentation.visualize(result)

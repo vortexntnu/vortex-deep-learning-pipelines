@@ -48,7 +48,11 @@ def process_frame(frame, model, conf, device):
 
             box = _draw_obb(annotated, cx, cy, w, h, theta)
 
-            label = f"{model.names[cls_id]} {score:.2f}"
+            angle_deg = np.degrees(theta)
+            if cls_id == 0:
+                label = f"{model.names[cls_id]} {score:.2f} {angle_deg:.1f}deg"
+            else:
+                label = f"{model.names[cls_id]} {score:.2f}"
             x0, y0 = int(box[0][0]), int(box[0][1])
 
             cv2.putText(
