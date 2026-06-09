@@ -1,6 +1,6 @@
 run:
   mode: "local" # "local" or "slurm"
-  task: "detect" # "segment", "detect", "obb", "classify"
+  task: "classify" # "segment", "detect", "obb", "classify"
   output_dir: "results" # where training outputs/logs go
   train_script: "train.py" # training entry script
 
@@ -77,7 +77,7 @@ models:
     roboflow:
       workspace_id: "hei-qp1ee" # Roboflow workspace
       project_id: "end-of-pipline" # dataset project
-      version: 4 # dataset version
+      version: 9 # dataset version
       dataset_format: "folder" # export format
     model: "yolo26m-cls.pt" # pretrained model file
     epochs: 200 # training epochs
