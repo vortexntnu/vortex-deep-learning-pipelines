@@ -29,6 +29,5 @@ yolo_segmentation_node:
     imgsz: 640
 
     confidence_threshold: 0.3
-    max_detections: 1
     compile: False # Set this to True for faster inference speed
     verbose: False # Set this to True to print Ultralytics per-frame output (speed, detections, image size)
