@@ -14,6 +14,7 @@ class YoloSegmentation:
         model_path: str,
         device: str,
         confidence_threshold: float,
+        iou: float,
         imgsz: int,
         compile: bool,
         verbose: bool,
@@ -21,6 +22,7 @@ class YoloSegmentation:
         self.model_path = model_path
         self.device = device
         self.confidence_threshold = confidence_threshold
+        self.iou = iou
         self.imgsz = imgsz
         self.compile = compile
         self.verbose = verbose
@@ -32,6 +34,7 @@ class YoloSegmentation:
             source=cv_image,
             imgsz=self.imgsz,
             conf=self.confidence_threshold,
+            iou=self.iou,
             device=torch.device(self.device),
             compile=self.compile,
             verbose=self.verbose,
