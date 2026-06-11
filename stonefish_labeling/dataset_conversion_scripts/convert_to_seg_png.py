@@ -93,6 +93,12 @@ def main():
     ap.add_argument("--seg-dir", required=True)
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--min-pixels", type=int, default=200)
+    ap.add_argument(
+        "--pipeline-ids",
+        type=str,
+        default=None,
+        help="Comma-separated list of object IDs to merge into a single 'pipeline' class (e.g. 1,4,5,6,7,8,9). All other IDs become background.",
+    )
     args = ap.parse_args()
 
     seg_dir = Path(os.path.expanduser(args.seg_dir))
@@ -100,12 +106,20 @@ def main():
     (out_dir / "images").mkdir(parents=True, exist_ok=True)
     (out_dir / "masks").mkdir(parents=True, exist_ok=True)
 
-    id2label = load_id_to_label(seg_dir)
     legend_colors = load_legend_colors(seg_dir)
-    class_ids = discover_classes(seg_dir, args.min_pixels, legend_colors)
-    classes = [id2label.get(i, f"id_{i}") for i in class_ids]
-    (out_dir / "classes.txt").write_text("\n".join(classes), encoding="utf-8")
-    id2idx = {cid: i for i, cid in enumerate(class_ids)}
+
+    if args.pipeline_ids is not None:
+        pipeline_id_set = {int(x.strip()) for x in args.pipeline_ids.split(",")}
+        (out_dir / "classes.txt").write_text("pipeline", encoding="utf-8")
+        id2idx = None  # signal: use pipeline mode
+    else:
+        id2label = load_id_to_label(seg_dir)
+        class_ids = discover_classes(seg_dir, args.min_pixels, legend_colors)
+        classes = [id2label.get(i, f"id_{i}") for i in class_ids]
+        (out_dir / "classes.txt").write_text("\n".join(classes), encoding="utf-8")
+        id2idx = {cid: i for i, cid in enumerate(class_ids)}
+        pipeline_id_set = None
+
     # Pair front images and masks (frame_*.png and frame_*_mask.*)
     front_files = sorted(seg_dir.glob("frame_*.png"))
     if not front_files:
@@ -139,9 +153,12 @@ def main():
 
         h, w = idm.shape[:2]
         mask_out = np.zeros((h, w), dtype=np.uint8)
-        for obj_id, cls_idx in id2idx.items():
-            m = idm == obj_id
-            mask_out[m] = cls_idx + 1  # reserve 0 for background
+        if pipeline_id_set is not None:
+            for obj_id in pipeline_id_set:
+                mask_out[idm == obj_id] = 1  # 1 = pipeline, 0 = background
+        else:
+            for obj_id, cls_idx in id2idx.items():
+                mask_out[idm == obj_id] = cls_idx + 1  # reserve 0 for background
 
         # save
         cv2.imwrite(str(out_dir / "images" / cpath.name), img)
