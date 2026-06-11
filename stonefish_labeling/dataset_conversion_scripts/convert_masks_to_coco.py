@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Convert a PNG-mask segmentation dataset to COCO instance segmentation JSON
-and zip it ready for Roboflow upload.
+"""Convert a PNG-mask segmentation dataset to COCO instance segmentation JSON and zip it ready for Roboflow upload.
 
 Each connected blob in the mask becomes one instance annotation.
 
@@ -11,6 +9,7 @@ Usage:
         --out-zip     /home/kluge7/stonefish_coco.zip \
         --min-pixels  200
 """
+
 import argparse
 import json
 import zipfile
@@ -19,21 +18,24 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-
 CATEGORIES = [{"id": 1, "name": "pipeline", "supercategory": ""}]
 
 
 def mask_to_instances(mask: np.ndarray, min_pixels: int):
     """Return list of (polygon_flat, bbox, area) for each connected blob in mask."""
     binary = (mask == 1).astype(np.uint8)
-    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
+        binary, connectivity=8
+    )
     instances = []
     for label_id in range(1, num_labels):  # 0 is background
         area = int(stats[label_id, cv2.CC_STAT_AREA])
         if area < min_pixels:
             continue
         instance_mask = (labels == label_id).astype(np.uint8)
-        contours, _ = cv2.findContours(instance_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
+        contours, _ = cv2.findContours(
+            instance_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1
+        )
         if not contours:
             continue
         contour = max(contours, key=cv2.contourArea)
@@ -103,9 +105,13 @@ def build_coco(dataset_dir: Path, min_pixels: int):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset-dir", required=True, help="Folder with images/ and masks/")
+    ap.add_argument(
+        "--dataset-dir", required=True, help="Folder with images/ and masks/"
+    )
     ap.add_argument("--out-zip", required=True, help="Output zip path")
-    ap.add_argument("--min-pixels", type=int, default=200, help="Minimum blob size to keep")
+    ap.add_argument(
+        "--min-pixels", type=int, default=200, help="Minimum blob size to keep"
+    )
     args = ap.parse_args()
 
     dataset_dir = Path(args.dataset_dir)
@@ -124,7 +130,9 @@ def main():
         for img_path in image_files:
             zf.write(img_path, img_path.name)
 
-    print(f"Done. Upload '{out_zip}' to Roboflow as an Instance Segmentation project (COCO format).")
+    print(
+        f"Done. Upload '{out_zip}' to Roboflow as an Instance Segmentation project (COCO format)."
+    )
 
 
 if __name__ == "__main__":

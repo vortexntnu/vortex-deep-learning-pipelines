@@ -153,6 +153,7 @@ def has_test_split(task, dataset_path, data_arg):
     test_path = (Path(data_arg).parent / test_rel).resolve()
     return test_path.exists()
 
+
 def train(config_path):
     config = load_config(config_path)
 
