@@ -80,8 +80,28 @@ run:
 
 ```yaml
 run:
-  task: "detection"   # segmentation / detection / obb
+  task: "detect"   # segment / detect / obb / classify
 ```
+
+### Training framework
+
+Choose YOLO or RF-DETR in the same `run` section:
+
+```yaml
+run:
+  task: "detect"
+  framework: "rf-detr" # or "yolo"
+```
+
+RF-DETR-specific parameters are under `models.detect.rf_detr`. The available
+detection classes are `RFDETRNano`, `RFDETRSmall`, `RFDETRMedium`, and
+`RFDETRLarge`. RF-DETR training currently supports `detect` (and `segment` when
+an `rf_detr` section is supplied); use YOLO for OBB and classification.
+
+For GPUs with approximately 4 GB of memory, use `batch: 1`, `resolution: 384`,
+`gradient_checkpointing: true`, and `multi_scale: false`. Increase
+`grad_accum_steps` to retain the desired effective batch size. Larger GPUs can
+raise the physical batch and resolution and re-enable multi-scale training.
 
 ### Training parameters
 
@@ -93,6 +113,7 @@ models:
     model: "yolov8m.pt"
     epochs: 200
     imgsz: 640
+    weight_decay: 0.0005
 ```
 
 ### Slurm settings

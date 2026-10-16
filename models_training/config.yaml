@@ -1,6 +1,7 @@
 run:
   mode: "local" # "local" or "slurm"
-  task: "classify" # "segment", "detect", "obb", "classify"
+  task: "detect" # "segment", "detect", "obb", "classify"
+  framework: "rf-detr" # "yolo" or "rf-detr" (RF-DETR supports detect/segment)
   output_dir: "results" # where training outputs/logs go
   train_script: "train.py" # training entry script
 
@@ -11,7 +12,7 @@ slurm:
   gpu_type: "a100" # requested GPU model
   constraint: "gpu40g|gpu80g|gpu32g" # allowed GPU memory types
   cpus: 10 # CPU cores allocated, by default model.train uses 8 cores
-  mem: "32G" # RAM allocated
+  mem: "16G" # RAM allocated
   time: "2:00:00" # job time limit
   nodes: 1 # number of nodes
   ntasks: 1 # tasks per job
@@ -19,31 +20,46 @@ slurm:
 models:
   segment:
     roboflow:
-      workspace_id: "hei-qp1ee" # Roboflow workspace ID
-      project_id: "pipe_seg_merge_jan_2026" # dataset project
-      version: 1 # dataset version
+      workspace_id: "Slalom workspace" # Roboflow workspace ID
+      project_id: "slalom_sim" # dataset project
+      version: 2 # dataset version
       dataset_format: "yolo26" # export format
-    model: "yolo26m-seg.pt" # pretrained model file
+    model: "yolo26s-seg.pt" # pretrained model file
     epochs: 100 # training epochs
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
     patience: 30 # early-stop patience
+    weight_decay: 0.001 # optimizer L2 regularization
     requirements: "requirements.txt" # dependency file
     export: ["onnx"] # export trained model (onnx, torchscript etc.)
 
   detect:
     roboflow:
-      workspace_id: "hei-qp1ee" # Roboflow workspace
-      project_id: "simulatorvalve-4rcbu" # dataset project
-      version: 1 # dataset version
+      workspace_id: "new-workspace-667ef" # Roboflow workspace
+      project_id: "slalom_sim" # dataset project
+      version: 3 # dataset version
       dataset_format: "yolo26" # export format
-    model: "yolo26l.pt" # pretrained model file
-    epochs: 200 # training epochs
+    model: "yolo26s.pt" # pretrained model file
+    epochs: 100 # training epochs
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
     patience: 30 # early-stop patience
+    weight_decay: 0.0005 # optimizer L2 regularization
     requirements: "requirements.txt" # dependency file
     export: ["onnx"] # export trained model (onnx, torchscript etc.)
+    rf_detr:
+      model_class: "RFDETRMedium" # Nano, Small, Medium, or Large
+      epochs: 100
+      batch: 1 # conservative setting for a 4 GB local GPU
+      grad_accum_steps: 16 # effective batch = batch * grad_accum_steps * GPUs
+      resolution: 384 # lower resolution substantially reduces activation memory
+      gradient_checkpointing: true # saves memory at the cost of slower training
+      multi_scale: false # prevents batches being enlarged beyond resolution
+      lr: 0.0001
+      patience: 30
+      early_stopping: true
+      weight_decay: 0.0005
+      export: ["onnx"]
 
   obb:
     roboflow:
@@ -56,6 +72,7 @@ models:
     batch: -1 # auto batch size
     imgsz: 640 # image resolution
     patience: 30 # early-stop patience
+    weight_decay: 0.0005 # optimizer L2 regularization
     requirements: "requirements.txt" # dependency file
     export: ["onnx"] # export trained model (onnx, torchscript etc.)''
 
@@ -70,6 +87,6 @@ models:
     batch: -1 # auto batch size
     imgsz: 244 # image resolution
     patience: 200 # early-stop patience
+    weight_decay: 0.0005 # optimizer L2 regularization
     requirements: "requirements.txt" # dependency file
     export: ["onnx"] # export trained model (onnx, torchscript etc.)''
-

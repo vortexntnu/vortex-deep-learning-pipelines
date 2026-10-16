@@ -4,5 +4,6 @@ onnxruntime-gpu==1.23.2
 onnxslim==0.1.85
 python-dotenv==1.0.1
 roboflow==1.1.24
+rfdetr[onnx,train]==1.11.2
 typeguard==2.2.2
 ultralytics==8.4.14

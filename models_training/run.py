@@ -17,7 +17,17 @@ def load_config():
 
 def validate_config(cfg):
     task = cfg["run"]["task"]
-    assert task in cfg["models"], f"Task {task} not in models"
+    if task not in cfg["models"]:
+        raise ValueError(f"Task {task} not in models")
+
+    framework = cfg["run"].get("framework", "yolo").lower().replace("_", "-")
+    if framework not in {"yolo", "rf-detr"}:
+        raise ValueError(f"Framework {framework} must be 'yolo' or 'rf-detr'")
+    if framework == "rf-detr":
+        if task not in {"detect", "segment"}:
+            raise ValueError("RF-DETR only supports detect or segment in this pipeline")
+        if "rf_detr" not in cfg["models"][task]:
+            raise ValueError(f"Task {task} has no rf_detr configuration")
 
 
 def get_requirements(cfg):
@@ -58,9 +68,13 @@ def submit_slurm(cfg):
     req_file = get_requirements(cfg)
 
     task = cfg["run"]["task"]
-    model_name = Path(cfg["models"][task]["model"]).stem
+    framework = cfg["run"].get("framework", "yolo").lower().replace("_", "-")
+    if framework == "rf-detr":
+        model_name = cfg["models"][task]["rf_detr"]["model_class"]
+    else:
+        model_name = Path(cfg["models"][task]["model"]).stem
 
-    job_name = f"{task}-{model_name}"
+    job_name = f"{task}-{framework}-{model_name}"
 
     script = template.format(
         job_name=job_name,
