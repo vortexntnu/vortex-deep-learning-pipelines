@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    rf_detr_model: 'rfdetr-medium_slalom_fp16.onnx'
+    model_conf: 0.25
+    color_image_sub_topic: '/nautilus/front_camera/image_color'
+    rf_detr_detections_pub_topic: '/rf_deter_detection/detections'
+    rf_detr_annotated_pub_topic: '/rf_deter_detection/annotated'
+    device: 'cpu'  # Use 'cuda', 'cuda:0', or '0' for the first GPU.
+    trust_checkpoint: false
+    class_names: ['black_pole', 'white_pole']
+    background_class_id: -1  # RF-DETR exports normally use the final class as background.
+    performance_log_interval: 100  # Set to 0 to disable average inference logging.

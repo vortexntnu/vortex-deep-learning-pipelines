@@ -1,0 +1,6 @@
+model/*.ckpt
+model/*.onnx
+model/*.pth
+!model/.gitkeep
+__pycache__/
+*.py[cod]
